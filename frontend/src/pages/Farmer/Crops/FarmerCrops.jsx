@@ -38,10 +38,13 @@ const FarmerCrops = () => {
             transition={{ type: "spring", stiffness: 200 }}
             onClick={() => navigate(`/farmer/cropdetailsview/${crop._id}`)}
           >
-            <img
-              src={`/cropimages/${crop.name.toLowerCase()}.jpeg`}
-              alt={crop.name}
-            />
+           <img
+  src={`${process.env.PUBLIC_URL}/cropimages/${crop.name.toLowerCase()}.jpeg`}
+  alt={crop.name}
+  onError={(e) => (e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`)}
+/>
+
+
             <h3>{crop.name}</h3>
             <p className="crop-category">🌿 {crop.category || "General"}</p>
             <p className="crop-quality">✅ {crop.quality || "Organic"}</p>

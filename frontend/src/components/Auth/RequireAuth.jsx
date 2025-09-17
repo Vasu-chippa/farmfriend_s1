@@ -1,21 +1,19 @@
-import { Navigate } from "react-router-dom";
+// src/components/RequireAuth.jsx
+import { Navigate, Outlet } from "react-router-dom";
 
-const RequireAuth = ({ allowedRoles, redirectTo, children }) => {
+const RequireAuth = ({ allowedRoles }) => {
   const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user = token ? JSON.parse(localStorage.getItem("user")) : null;
 
-  // Not logged in
-  if (!token || !user) {
-    return <Navigate to={redirectTo || "/login"} replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Role not allowed
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  // ✅ If everything is fine, render children
-  return children;
+  return <Outlet />;
 };
 
 export default RequireAuth;

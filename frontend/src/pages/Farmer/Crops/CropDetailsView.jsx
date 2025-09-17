@@ -84,7 +84,13 @@ const CropDetailsView = () => {
       <button onClick={() => navigate(-1)} className="back-btn">← Back</button>
 
       <div className="crop-header">
-        <img src={`/cropimages/${crop.name.toLowerCase()}.jpeg`} alt={crop.name} />
+       <img
+  src={`${process.env.PUBLIC_URL}/cropimages/${crop.name.toLowerCase()}.jpeg`}
+  alt={crop.name}
+  onError={(e) => (e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`)}
+/>
+
+
         <h2>{crop.name}</h2>
       </div>
 

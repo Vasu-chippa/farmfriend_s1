@@ -1,4 +1,3 @@
-// apps/frontend/src/pages/Farmer/Harvest/CropRecords.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -35,17 +34,15 @@ const CropRecords = () => {
     transportCost: "",
   });
 
-  // fetch crop details (tries crops endpoint then harvest fallback)
+  // fetch crop details
   const fetchCrop = useCallback(async () => {
     if (!cropId) return;
     try {
-      // First try product crop endpoint
       const res = await axios.get(`http://localhost:5000/api/crops/${cropId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCrop(res.data);
     } catch (err) {
-      // Fallback: maybe cropId is an entry inside harvest
       try {
         const res2 = await axios.get(`http://localhost:5000/api/harvest/${cropId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -76,17 +73,13 @@ const CropRecords = () => {
     fetchRecords();
   }, [fetchCrop, fetchRecords]);
 
-  // handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((f) => ({ ...f, [name]: value }));
   };
 
-  // Save / Update record
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // validate minimal fields
     if (!formData.date || !formData.cost || !formData.quantity) {
       toast.error("Please fill Date, Cost and Quantity");
       return;
@@ -103,12 +96,9 @@ const CropRecords = () => {
         setEditingRecord(null);
       } else {
         const created = await addRecord({ ...formData, cropId });
-        // server returns created record
         setRecords((prev) => [created, ...prev]);
         toast.success("Record saved");
       }
-
-      // close & reset form
       setShowForm(false);
       setShowAdvanced(false);
       setFormData({
@@ -157,7 +147,12 @@ const CropRecords = () => {
       toast.error("Failed to delete record");
     }
   };
-
+//   const getImageUrl = (img) => {
+//   if (!img) return "/cropimages/default.jpeg";
+//   return img.startsWith("http")
+//     ? img
+//     : `http://localhost:5000/uploads/${img}`;
+// };
   return (
     <div className="crop-records-page">
       <div className="left-panel">
@@ -167,19 +162,31 @@ const CropRecords = () => {
 
         {crop ? (
           <div className="crop-card">
-            <img
-              src={crop.image || crop.images?.[0] || "/default-crop.jpg"}
-              alt={crop.name}
-              className="crop-image"
-            />
+         <img
+  src={
+    crop?.image
+      ? `${process.env.PUBLIC_URL}/cropimages/${crop.image}`
+      : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`
+  }
+  alt={crop?.name || "crop"}
+  className="crop-image"
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+  }}
+/>
+
+
+
+
             <div className="crop-info">
               <h2>🌱 {crop.name}</h2>
-              <p><b>Category:</b> {crop.category || crop.category || "General"}</p>
+              <p><b>Category:</b> {crop.category || "General"}</p>
               <p><b>Season:</b> {crop.season || "N/A"}</p>
               <p><b>Sowing Time:</b> {crop.sowingTime || crop.sowing || "N/A"}</p>
               <p><b>Price:</b> ₹{crop.price || "N/A"}/kg</p>
               <p><b>Quantity:</b> {crop.quantity || "N/A"} kg</p>
-              <p><b>Quality:</b> {crop.quality || crop.isOrganic ? "Organic" : "Standard"}</p>
+              <p><b>Quality:</b> {crop.quality || (crop.isOrganic ? "Organic" : "Standard")}</p>
             </div>
           </div>
         ) : (
@@ -190,7 +197,13 @@ const CropRecords = () => {
       <div className="right-panel">
         <div className="records-header">
           <h3>📑 Records</h3>
-          <button onClick={() => { setShowForm((s) => !s); setEditingRecord(null); }} className="add-btn">
+          <button
+            onClick={() => {
+              setShowForm((s) => !s);
+              setEditingRecord(null);
+            }}
+            className="add-btn"
+          >
             {showForm ? "Cancel" : "➕ Add Record"}
           </button>
         </div>
@@ -201,26 +214,21 @@ const CropRecords = () => {
               <label>Date</label>
               <input type="date" name="date" value={formData.date} onChange={handleChange} required />
             </div>
-
             <div className="form-row">
               <label>Cost (₹)</label>
               <input type="number" name="cost" value={formData.cost} onChange={handleChange} required />
             </div>
-
             <div className="form-row">
               <label>Quantity (kg)</label>
               <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} required />
             </div>
-
             <div className="form-row full">
               <label>Description</label>
               <textarea name="description" value={formData.description} onChange={handleChange} />
             </div>
-
             <button type="button" className="toggle-btn" onClick={() => setShowAdvanced((s) => !s)}>
               {showAdvanced ? "Hide Advanced ▲" : "Show Advanced ▼"}
             </button>
-
             {showAdvanced && (
               <div className="advanced-fields">
                 <div className="form-row">
@@ -241,7 +249,6 @@ const CropRecords = () => {
                 </div>
               </div>
             )}
-
             <div className="form-actions">
               <button type="submit" className="save-btn">
                 {editingRecord ? "Update Record" : "Save Record"}
@@ -250,7 +257,6 @@ const CropRecords = () => {
           </form>
         )}
 
-        {/* table */}
         {!showForm && (
           <>
             {records && records.length > 0 ? (
@@ -293,7 +299,6 @@ const CropRecords = () => {
           </>
         )}
       </div>
-
       <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );

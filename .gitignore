@@ -2,11 +2,17 @@
 backend/node_modules/
 frontend/node_modules/
 
-# Build outputs
-backend/dist/
+# Build files
+backend/build/
 frontend/build/
-frontend/dist/
 
-# Environment
+# Environment files
 backend/.env
 frontend/.env
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
