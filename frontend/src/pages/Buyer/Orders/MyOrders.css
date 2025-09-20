@@ -1,0 +1,116 @@
+.orders-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.orders-container {
+  flex: 1;
+  margin-left: 220px; /* sidebar width */
+  padding: 30px;
+}
+
+.orders-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #2e7d32;
+}
+
+.orders-loading,
+.no-orders {
+  font-size: 1.2rem;
+  color: #555;
+  margin-top: 20px;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 12px 15px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+.orders-table th {
+  background: #2e7d32;
+  color: white;
+  font-weight: 600;
+}
+
+.orders-table tr:hover {
+  background: #f1f8f4;
+  transition: 0.2s;
+}
+
+.order-img {
+  width: 80px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.status {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.btn {
+  padding: 6px 12px;
+  margin: 2px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.3s;
+}
+
+.edit-btn {
+  background: #1976d2;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #0d47a1;
+}
+
+.delete-btn {
+  background: #d32f2f;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #b71c1c;
+}
+.order-img {
+  width: 70px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}

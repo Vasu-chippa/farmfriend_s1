@@ -1,77 +1,94 @@
+// src/pages/Buyer/Marketplace.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import BuyerSidebar from "../../../components/BuyerSidebar";
 import "./Marketplace.css";
 
-const MarketplaceList = () => {
+const Marketplace = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/marketplace");
-        setProducts(res.data);
+        setProducts(res.data || []);
       } catch (err) {
-        console.error("❌ Error fetching products:", err);
-        setError("Failed to load products");
+        console.error("Error fetching marketplace items:", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
-  if (loading) return <p>Loading marketplace...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) return <div className="mp-loading">Loading marketplace...</div>;
 
   return (
-    <div style={{ display: "flex" }}>
-      <BuyerSidebar />
-      <div className="marketplace-container" style={{ marginLeft: "220px", padding: "20px" }}>
+    <div className="mp-layout">
+      <div className="mp-header">
         <h2>🌾 Marketplace</h2>
-        {products.length === 0 ? (
-          <p>No products available.</p>
-        ) : (
-          <div className="marketplace-grid">
-            {products.map((product) => (
-              <div key={product._id} className="product-card">
-                <img
-                  src={
-                    product.images?.length > 0
-                      ? `http://localhost:5000/uploads/${product.images[0]}`
-                      : "https://via.placeholder.com/200x150?text=No+Image"
-                  }
-                  alt={product.name}
-                  className="product-image"
-                />
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
-                <p>
-                  <strong>💰 Price:</strong> ₹{product.price}/kg
-                </p>
-                <p>
-                  <strong>📦 Quantity:</strong> {product.quantity} kg
-                </p>
-                <p>
-                  <strong>👨‍🌾 Farmer:</strong> {product.farmer?.fullName || "Unknown"}
-                </p>
-                <button
-                  className="buy-btn"
-                  onClick={() => navigate(`/buyer/marketplace/${product._id}`)}
-                >
-                  View & Buy
-                </button>
-              </div>
-            ))}
+      </div>
+
+      <div className="mp-grid">
+        {products.length === 0 && (
+          <div className="mp-empty">
+            No products available. Farmers haven't uploaded anything yet.
           </div>
         )}
+
+        {products.map((p) => {
+          const imgPath =
+            p.images && p.images.length
+              ? `http://localhost:5000${p.images[0]}`
+              : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+
+          return (
+            <div key={p._id} className="mp-card">
+              <div
+                className="mp-card-image"
+                onClick={() => navigate(`/buyer/marketplace/${p._id}`)}
+              >
+                <img
+                  src={imgPath}
+                  alt={p.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+                  }}
+                />
+              </div>
+
+              <div className="mp-card-body">
+                <h3 className="mp-card-title">{p.name}</h3>
+                <p className="mp-card-desc">{p.description || "No description"}</p>
+
+                <div   onClick={() => navigate(`/buyer/marketplace/${p._id}`)}
+                      className="mp-meta">
+                  <div><strong>Price:</strong> ₹{p.price}/kg</div>
+                  <div><strong>Qty:</strong> {p.quantity} kg</div>
+                  <div><strong>Quality:</strong> {p.quality || "-"}</div>
+                  <div><strong>Organic:</strong> {p.isOrganic ? "✅ Yes" : "❌ No"}</div>
+                  <div className="mp-farmer"><strong>Farmer:</strong> {p.farmer?.name || "Unknown"}</div>
+                </div>
+
+                <div className="mp-actions">
+                  <button
+                    onClick={() => navigate(`/buyer/marketplace/${p._id}`)}
+                    className="mp-btn view-btn"
+                  >
+                    View & Buy
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
 
-export default MarketplaceList;
+export default Marketplace;

@@ -1,47 +1,53 @@
+// backend/src/routes/farmerRoutes.js
 import express from "express";
 import upload from "../middlewares/upload.js";
-import Crop from "../models/Crop.js";
+import Product from "../models/Product.js";
+import Expense from "../models/Expense.js";
+import { protect, authorizeRoles } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+/* =====================================================
+   FARMER PRODUCTS CRUD
+===================================================== */
 
 /**
  * @route   POST /api/farmers/products
- * @desc    Add new product
+ * @desc    Add new product (farmer only)
  */
-router.post("/products", upload.array("images"), async (req, res) => {
+router.post("/products", protect, authorizeRoles("farmer"), upload.array("images"), async (req, res) => {
   try {
-    console.log("Body:", req.body);
-    console.log("Files:", req.files);
-
     const { name, description, price, quantity, quality, organic } = req.body;
+    // Save all uploaded images
+    const images = req.files?.length > 0 ? req.files.map(f => "/uploads/" + f.filename) : [];
 
-    const crop = new Crop({
+    const product = new Product({
+      farmer: req.user._id,
       name,
       description,
       price,
       quantity,
       quality,
-      organic: organic === "true" || organic === true, // normalize boolean
-      images: req.files ? req.files.map((f) => "/uploads/" + f.filename) : [],
+      isOrganic: organic === "true" || organic === true,
+      images,
     });
 
-    await crop.save();
-    res.json(crop);
+    await product.save();
+    res.status(201).json(product);
   } catch (err) {
     console.error("❌ Error saving product:", err);
-    res.status(500).json({ error: "Failed to save product" });
+    res.status(500).json({ error: "Error saving product" });
   }
 });
 
 /**
  * @route   GET /api/farmers/products
- * @desc    Fetch all products
+ * @desc    Fetch all products of logged-in farmer
  */
-router.get("/products", async (req, res) => {
+router.get("/products", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
-    const crops = await Crop.find().sort({ createdAt: -1 });
-    res.json(crops);
+    const products = await Product.find({ farmer: req.user._id }).sort({ createdAt: -1 });
+    res.json(products);
   } catch (err) {
     console.error("❌ Error fetching products:", err);
     res.status(500).json({ error: "Failed to fetch products" });
@@ -50,44 +56,36 @@ router.get("/products", async (req, res) => {
 
 /**
  * @route   GET /api/farmers/products/:id
- * @desc    Fetch single product details
+ * @desc    Fetch single product details (farmer only)
  */
-router.get("/products/:id", async (req, res) => {
+router.get("/products/:id", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
-    const crop = await Crop.findById(req.params.id);
-    if (!crop) return res.status(404).json({ error: "Product not found" });
-
-    res.json(crop);
+    const product = await Product.findOne({ _id: req.params.id, farmer: req.user._id });
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    res.json(product);
   } catch (err) {
     console.error("❌ Error fetching product:", err);
-        res.status(500).json({ error: "Failed to fetch product" });
+    res.status(500).json({ error: "Failed to fetch product" });
   }
 });
+
 /**
  * @route   PUT /api/farmers/products/:id
- * @desc    Update product
+ * @desc    Update product (farmer only)
  */
-router.put("/products/:id", upload.array("images"), async (req, res) => {
+router.put("/products/:id", protect, authorizeRoles("farmer"), upload.array("images"), async (req, res) => {
   try {
-    const updateData = { ...req.body };
-
-    // Ensure organic is boolean
-    if (updateData.organic !== undefined) {
-      updateData.organic =
-        updateData.organic === "true" || updateData.organic === true;
-    }
-
-    // Handle new uploaded images
+    const { name, description, price, quantity, quality, organic } = req.body;
+    const updateData = { name, description, price, quantity, quality, isOrganic: organic === "true" || organic === true };
     if (req.files && req.files.length > 0) {
-      updateData.images = req.files.map((f) => "/uploads/" + f.filename);
+      updateData.images = req.files.map(f => "/uploads/" + f.filename);
     }
-
-    const updated = await Crop.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-    });
-
+    const updated = await Product.findOneAndUpdate(
+      { _id: req.params.id, farmer: req.user._id },
+      updateData,
+      { new: true }
+    );
     if (!updated) return res.status(404).json({ error: "Product not found" });
-
     res.json(updated);
   } catch (err) {
     console.error("❌ Error updating product:", err);
@@ -97,27 +95,35 @@ router.put("/products/:id", upload.array("images"), async (req, res) => {
 
 /**
  * @route   DELETE /api/farmers/products/:id
- * @desc    Delete product
+ * @desc    Delete product (farmer only)
  */
-router.delete("/products/:id", async (req, res) => {
+router.delete("/products/:id", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
-    const deleted = await Crop.findByIdAndDelete(req.params.id);
+    const deleted = await Product.findOneAndDelete({ _id: req.params.id, farmer: req.user._id });
     if (!deleted) return res.status(404).json({ error: "Product not found" });
-
-    res.json({ message: "🗑️ Deleted successfully" });
+    res.json({ message: "🗑️ Product deleted successfully" });
   } catch (err) {
     console.error("❌ Error deleting product:", err);
     res.status(500).json({ error: "Failed to delete product" });
   }
 });
-export default router;
 
-// Expenses model   +++++++++++++++++++++++++++++++++
-import Expense from "../models/Expense.js";
+/* =====================================================
+   FARMER EXPENSES CRUD
+===================================================== */
+
+// same as your current expenses code (no change)
+
+
+
+
+/* =====================================================
+   FARMER EXPENSES CRUD
+===================================================== */
 
 /**
  * @route   POST /api/farmers/expenses
- * @desc    Add a new expense
+ * @desc    Add a new expense (farmer only)
  */
 // Add expense
 router.post("/expenses", async (req, res) => {
@@ -192,3 +198,4 @@ router.delete("/expenses/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete expense" });
   }
 });
+export default router;

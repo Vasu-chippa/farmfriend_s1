@@ -6,12 +6,15 @@ const cropSchema = new mongoose.Schema({
   description: { type: String },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
-  image: { type: String, default: "" },
-  status: { type: String, enum: ["Active", "Completed", "Hold"], default: "Active" },
+  image: { type: String, default: "" }, // ✅ keep single image for now
+  status: {
+    type: String,
+    enum: ["Active", "Completed", "Hold"],
+    default: "Active",
+  },
   profit: { type: Number, default: 0 },
   dateAdded: { type: Date, default: Date.now },
-  dateCompleted: { type: Date }
+  dateCompleted: { type: Date },
 });
 
-// ✅ Correct way for ESM
 export default mongoose.model("Crop", cropSchema);

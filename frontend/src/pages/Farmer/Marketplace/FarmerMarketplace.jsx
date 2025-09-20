@@ -1,7 +1,7 @@
 // apps/frontend/src/pages/Farmer/Marketplace/FarmerMarketplace.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";  // ✅ for navigation
+import { useNavigate } from "react-router-dom";
 import "./FarmerMarketplace.css";
 
 function FarmerMarketplace() {
@@ -27,14 +27,16 @@ function FarmerMarketplace() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/farmers/products");
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/farmers/products", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setProducts(res.data);
     } catch (err) {
       console.error("Error fetching products", err);
     }
   };
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === "checkbox") {
@@ -46,7 +48,6 @@ function FarmerMarketplace() {
     }
   };
 
-  // Submit form (Add or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -62,18 +63,21 @@ function FarmerMarketplace() {
     });
 
     try {
+      const token = localStorage.getItem("token");
       if (editProduct) {
         await axios.put(
           `http://localhost:5000/api/farmers/products/${editProduct._id}`,
-          data
+          data,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         alert("✅ Product updated!");
       } else {
-        await axios.post("http://localhost:5000/api/farmers/products", data);
+        await axios.post("http://localhost:5000/api/farmers/products", data, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         alert("✅ Product added!");
       }
 
-      // reset
       setFormData({
         name: "",
         description: "",
@@ -92,7 +96,6 @@ function FarmerMarketplace() {
     }
   };
 
-  // Edit product
   const handleEdit = (product) => {
     setEditProduct(product);
     setFormData({
@@ -107,11 +110,13 @@ function FarmerMarketplace() {
     setShowForm(true);
   };
 
-  // Delete product
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/farmers/products/${id}`);
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/farmers/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       alert("🗑️ Product deleted!");
       fetchProducts();
     } catch (err) {
@@ -136,18 +141,13 @@ function FarmerMarketplace() {
             <div
               key={p._id}
               className="product-card clickable"
-              onClick={() => navigate(`/farmer/marketplace/${p._id}`)} // ✅ Go to CropDetails
+              onClick={() => navigate(`/farmer/marketplace/${p._id}`)}
             >
               <img
-                src={
-                  p.images?.[0]
-                    ? `http://localhost:5000${p.images[0]}`
-                    : "/default-crop.jpg"
-                }
+                src={p.images?.[0] ? `http://localhost:5000${p.images[0]}` : "/default-crop.jpg"}
                 alt={p.name}
                 className="product-img"
               />
-
               <div className="product-details">
                 <h3>{p.name}</h3>
                 <p>{p.description}</p>
@@ -155,10 +155,12 @@ function FarmerMarketplace() {
                 <p><strong>Qty:</strong> {p.quantity} kg</p>
                 <p><strong>Quality:</strong> {p.quality}</p>
                 <p>{p.organic ? "🌱 Organic" : "❌ Non-Organic"}</p>
+
+                {/* Edit/Delete */}
                 <div className="actions">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // prevent navigation
+                      e.stopPropagation();
                       handleEdit(p);
                     }}
                   >
@@ -166,7 +168,7 @@ function FarmerMarketplace() {
                   </button>
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // prevent navigation
+                      e.stopPropagation();
                       handleDelete(p._id);
                     }}
                   >
@@ -187,86 +189,31 @@ function FarmerMarketplace() {
           <div className="modal-content">
             <h3>{editProduct ? "✏️ Edit Product" : "➕ Add Product"}</h3>
             <form onSubmit={handleSubmit} className="product-form">
-              <input
-                type="text"
-                name="name"
-                placeholder="Crop Name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-              <textarea
-                name="description"
-                placeholder="Description"
-                value={formData.description}
-                onChange={handleChange}
-              />
-              <input
-                type="number"
-                name="price"
-                placeholder="Price"
-                value={formData.price}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="number"
-                name="quantity"
-                placeholder="Quantity (kg)"
-                value={formData.quantity}
-                onChange={handleChange}
-                required
-              />
-              <select
-                name="quality"
-                value={formData.quality}
-                onChange={handleChange}
-              >
+              <input type="text" name="name" placeholder="Crop Name" value={formData.name} onChange={handleChange} required />
+              <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
+              <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleChange} required />
+              <input type="number" name="quantity" placeholder="Quantity (kg)" value={formData.quantity} onChange={handleChange} required />
+              <select name="quality" value={formData.quality} onChange={handleChange}>
                 <option value="A">A (Excellent)</option>
                 <option value="B">B (Good)</option>
                 <option value="C">C (Average)</option>
               </select>
               <label>
-                <input
-                  type="checkbox"
-                  name="organic"
-                  checked={formData.organic}
-                  onChange={handleChange}
-                />
+                <input type="checkbox" name="organic" checked={formData.organic} onChange={handleChange} />
                 Organic
               </label>
-              <input
-                type="file"
-                name="images"
-                multiple
-                onChange={handleChange}
-              />
+              <input type="file" name="images" multiple onChange={handleChange} />
 
-              {/* 🔹 Preview uploaded images */}
               <div className="image-preview">
                 {formData.images &&
                   Array.from(formData.images).map((file, index) => (
-                    <img
-                      key={index}
-                      src={URL.createObjectURL(file)}
-                      alt="preview"
-                      className="preview-thumb"
-                    />
+                    <img key={index} src={URL.createObjectURL(file)} alt="preview" className="preview-thumb" />
                   ))}
               </div>
 
               <div className="form-actions">
-                <button type="submit">
-                  {editProduct ? "Update" : "Add"}
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditProduct(null);
-                  }}
-                >
+                <button type="submit">{editProduct ? "Update" : "Add"}</button>
+                <button type="button" className="cancel-btn" onClick={() => { setShowForm(false); setEditProduct(null); }}>
                   Cancel
                 </button>
               </div>

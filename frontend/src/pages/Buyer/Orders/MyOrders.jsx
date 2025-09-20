@@ -1,5 +1,7 @@
+// frontend/src/pages/buyer/MyOrders.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import BuyerSidebar from "../../../components/BuyerSidebar";
 import "./MyOrders.css";
 
 const MyOrders = () => {
@@ -9,63 +11,122 @@ const MyOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const buyer = JSON.parse(localStorage.getItem("user"));
-        const res = await axios.get(`http://localhost:5000/api/orders/buyer/${buyer._id}`);
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:5000/api/buyers/orders", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setOrders(res.data);
-        setLoading(false);
       } catch (err) {
         console.error("❌ Error fetching orders:", err);
+      } finally {
         setLoading(false);
       }
     };
     fetchOrders();
   }, []);
 
-  if (loading) return <p>Loading your orders...</p>;
+  // Delete Order
+  const handleDelete = async (orderId) => {
+    try {
+      const token = localStorage.getItem("token");
+     await axios.delete(`http://localhost:5000/api/buyers/orders/${orderId}`, {
+       headers: { Authorization: `Bearer ${token}` },
+     });
+
+      setOrders(orders.filter((o) => o._id !== orderId));
+    } catch (err) {
+      console.error("❌ Error deleting order:", err);
+    }
+  };
+
+  // Update Order Quantity
+  const handleUpdate = async (orderId) => {
+    const newQty = prompt("Enter new quantity (kg):");
+    if (!newQty || isNaN(newQty) || Number(newQty) <= 0) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+          `http://localhost:5000/api/buyers/orders/${orderId}`,
+           { quantity: Number(newQty) },
+           { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+
+      setOrders(
+        orders.map((o) => (o._id === orderId ? { ...o, ...res.data } : o))
+      );
+    } catch (err) {
+      console.error("❌ Error updating order:", err);
+    }
+  };
+
+  if (loading) return <p className="orders-loading">Loading your orders...</p>;
 
   return (
-    <div className="orders-container">
-      <h2>📦 My Orders</h2>
-      {orders.length === 0 ? (
-        <p>No orders found.</p>
-      ) : (
-        <div className="orders-list">
-          {orders.map((order) => (
-            <div key={order._id} className="order-card">
-              <img
-                src={
-                  order.crop?.images?.length > 0
-                    ? `http://localhost:5000/uploads/${order.crop.images[0]}`
-                    : "https://via.placeholder.com/150x100?text=No+Image"
-                }
-                alt={order.crop?.name}
-                className="order-image"
-              />
-              <div className="order-info">
-                <h3>{order.crop?.name}</h3>
-                <p>
-                  <strong>Farmer:</strong> {order.farmer?.fullName}
-                </p>
-                <p>
-                  <strong>Quantity:</strong> {order.quantity} kg
-                </p>
-                <p>
-                  <strong>Total Price:</strong> ₹{order.price}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  <span className={`status ${order.status.toLowerCase()}`}>
-                    {order.status}
-                  </span>
-                </p>
-                <p className="date">
-                  Ordered on: {new Date(order.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="orders-layout">
+      <BuyerSidebar />
+      <div className="orders-container">
+        <h2 className="orders-title">📦 My Orders</h2>
+        {orders.length === 0 ? (
+          <p className="no-orders">No orders found.</p>
+        ) : (
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Quantity (kg)</th>
+                <th>Total Price</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order._id}>
+                  <td>
+                    <img
+  src={
+    order.product?.images?.length > 0
+      ? `http://localhost:5000${order.product.images[0]}`
+      : "https://via.placeholder.com/80x60?text=No+Image"
+  }
+  alt={order.product?.name}
+  className="order-img"
+/>
+
+                  </td>
+                  <td>{order.product?.name}</td>
+                  <td>{order.quantity}</td>
+                  <td>₹{order.total}</td>
+                  <td>
+                    <span className={`status ${order.status?.toLowerCase()}`}>
+                      {order.status}
+                    </span>
+                  </td>
+                  <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button
+                      className="btn edit-btn"
+                      onClick={() => handleUpdate(order._id)}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      className="btn delete-btn"
+                      onClick={() => handleDelete(order._id)}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

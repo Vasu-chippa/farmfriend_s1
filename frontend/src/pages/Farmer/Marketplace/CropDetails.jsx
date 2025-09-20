@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./CropDetails.css";
- // ✅ Import CSS
-//farmfriend\apps\frontend\src\pages\CropDetails.css
+
 function CropDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,12 +14,22 @@ function CropDetails() {
   useEffect(() => {
     const fetchCrop = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/farmers/products/${id}`
-        );
+        // 🔹 Try public crop API first
+        let res = await axios.get(`http://localhost:5000/api/crops/${id}`);
         setCrop(res.data);
       } catch (err) {
-        console.error("Error fetching crop:", err);
+        try {
+          // 🔹 If not found, fallback to farmer’s product API
+          const token = localStorage.getItem("token");
+          let res = await axios.get(
+            `http://localhost:5000/api/farmers/products/${id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setCrop(res.data);
+        } catch (error2) {
+          console.error("Error fetching crop:", error2);
+          setCrop(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -49,17 +58,17 @@ function CropDetails() {
             crop.images.map((img, idx) => (
               <img
                 key={idx}
-                src={`http://localhost:5000${img}`}
+                src={
+                  img.startsWith("http")
+                    ? img
+                    : `http://localhost:5000${img}`
+                }
                 alt={`crop-${idx}`}
                 className="crop-img"
               />
             ))
           ) : (
-            <img
-              src="/default-crop.jpg"
-              alt="default"
-              className="crop-img"
-            />
+            <img src="/default-crop.jpg" alt="default" className="crop-img" />
           )}
         </div>
 

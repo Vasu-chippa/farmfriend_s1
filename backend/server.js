@@ -20,7 +20,7 @@ import cropRoutes from "./src/routes/cropRoutes.js";
 
 
 import orderRoutes from "./src/routes/orderRoutes.js";
-
+import productRoutes from "./src/routes/productRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -59,6 +59,9 @@ app.use("/api/crops", cropRoutes);
 app.use("/api/harvest", harvestRoutes);
 
 app.use("/api/crop-records", cropRecordRoutes);
+
+app.use("/api/marketplace", productRoutes);
+
 
 // Database connection
 mongoose
