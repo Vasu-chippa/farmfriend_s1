@@ -16,9 +16,6 @@ import farmerRoutes from "./src/routes/farmerRoutes.js";
 import harvestRoutes from "./src/routes/harvestRoutes.js";
 import cropRecordRoutes from "./src/routes/cropRecordRoutes.js";
 import cropRoutes from "./src/routes/cropRoutes.js";
-
-
-
 import orderRoutes from "./src/routes/orderRoutes.js";
 import productRoutes from "./src/routes/productRoutes.js";
 
@@ -36,8 +33,6 @@ app.use(morgan("dev"));
 // Static folder for uploaded images
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// ✅ Serve uploads folder (so frontend can access images)
 app.use("/uploads", express.static(path.join(__dirname, "src", "uploads")));
 
 // Health check route
@@ -46,34 +41,32 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-
 app.use("/api/orders", orderRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/agents", agentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/buyers", buyerRoutes);
 app.use("/api/farmers", farmerRoutes);
-
 app.use("/api/crops", cropRoutes);
-
 app.use("/api/harvest", harvestRoutes);
-
 app.use("/api/crop-records", cropRecordRoutes);
-
 app.use("/api/marketplace", productRoutes);
 
-
 // Database connection
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => {
-    console.error("❌ DB Connection Error:", err);
-    process.exit(1);
-  });
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:", error.message);
+    // ❌ Don't exit directly on Render; let it retry
+  }
+};
+
+connectDB();
 
 // Server listening
 const PORT = process.env.PORT || 5000;
