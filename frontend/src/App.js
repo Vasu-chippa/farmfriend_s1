@@ -8,7 +8,7 @@ import RequireAuth from "./components/guards/RequireAuth";
 
 // Layouts
 import AdminLayout from "./layouts/AdminLayout";
-import BuyerLayout from "./layouts/BuyerLayout"; // ✅ added
+import BuyerLayout from "./layouts/BuyerLayout";
 
 // Home
 import Home from "./pages/Home/Home";
@@ -26,12 +26,12 @@ import AdminLogin from "./pages/Auth/AdminLogin/AdminLogin";
 import FarmerDashboard from "./pages/Farmer/Dashboard/FarmerDashboard";
 import FarmerCrops from "./pages/Farmer/Crops/FarmerCrops";
 import HarvestList from "./pages/Farmer/Harvest/HarvestList";
-import CropDetailsView from "./pages/Farmer/Crops/CropDetailsView"; // ✅ crops page details
-import CropDetails from "./pages/Farmer/Marketplace/CropDetails"; // marketplace details
+import CropDetailsView from "./pages/Farmer/Crops/CropDetailsView";
+import CropDetails from "./pages/Farmer/Marketplace/CropDetails";
 import ExpenseTracker from "./pages/Farmer/ExpenseTracker/ExpenseTracker";
 import FarmerMarketplace from "./pages/Farmer/Marketplace/FarmerMarketplace";
 import FarmerProfile from "./pages/Farmer/Profile/FarmerProfile";
-import CropRecords from "./pages/Farmer/Harvest/CropRecords"; // crop records page
+import CropRecords from "./pages/Farmer/Harvest/CropRecords";
 
 // Buyer Section
 import BuyerDashboard from "./pages/Buyer/Dashboard/BuyerDashboard";
@@ -43,7 +43,7 @@ import Profile from "./pages/Buyer/Profile/Profile";
 // Agent Section
 import AgentDashboard from "./pages/Agent/Dashboard/AgentDashboard";
 
-// Admin Section Pages
+// Admin Section
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
 import FarmersList from "./pages/Admin/FarmersList";
 import BuyersList from "./pages/Admin/BuyersList";
@@ -52,7 +52,6 @@ import AgentsList from "./pages/Admin/AgentsList";
 function App() {
   return (
     <>
-      {/* Public + Auth use Navbar */}
       <Navbar />
       <Routes>
         {/* Home */}
@@ -66,7 +65,7 @@ function App() {
         <Route path="/agent/login" element={<AgentLogin />} />
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Farmer protected routes */}
+        {/* Farmer Protected Routes */}
         <Route
           path="/farmer/dashboard"
           element={
@@ -85,14 +84,6 @@ function App() {
         />
         <Route
           path="/farmer/harvest"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <HarvestList />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/harvest/:cropId"
           element={
             <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
               <HarvestList />
@@ -140,10 +131,6 @@ function App() {
           }
         />
         <Route
-          path="/farmer/cropdetailsview/:id"
-          element={<CropDetailsView />}
-        />
-        <Route
           path="/farmer/crop-records/:cropId"
           element={
             <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
@@ -152,7 +139,7 @@ function App() {
           }
         />
 
-        {/* Buyer protected routes with BuyerLayout ✅ */}
+        {/* Buyer Protected Routes */}
         <Route
           path="/buyer/dashboard"
           element={
@@ -204,7 +191,7 @@ function App() {
           }
         />
 
-        {/* Agent protected route */}
+        {/* Agent */}
         <Route
           path="/agent/dashboard"
           element={
@@ -214,7 +201,7 @@ function App() {
           }
         />
 
-        {/* Admin section protected + layout with nested routes */}
+        {/* Admin */}
         <Route
           element={
             <RequireAuth allowedRoles={["admin"]} redirectTo="/admin/login" />
@@ -228,7 +215,7 @@ function App() {
           </Route>
         </Route>
 
-        {/* 404 */}
+        {/* Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
