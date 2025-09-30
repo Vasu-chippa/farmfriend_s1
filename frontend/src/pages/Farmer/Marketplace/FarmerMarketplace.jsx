@@ -143,18 +143,18 @@ function FarmerMarketplace() {
               className="product-card clickable"
               onClick={() => navigate(`/farmer/marketplace/${p._id}`)}
             >
-              <img
+              {/* <img
                 src={p.images?.[0] ? `http://localhost:5000${p.images[0]}` : "/default-crop.jpg"}
                 alt={p.name}
                 className="product-img"
-              />
+              /> */}
               <div className="product-details">
                 <h3>{p.name}</h3>
-                <p>{p.description}</p>
+                {/* <p>{p.description}</p> */}
                 <p><strong>Price:</strong> ₹{p.price}</p>
                 <p><strong>Qty:</strong> {p.quantity} kg</p>
-                <p><strong>Quality:</strong> {p.quality}</p>
-                <p>{p.organic ? "🌱 Organic" : "❌ Non-Organic"}</p>
+                {/* <p><strong>Quality:</strong> {p.quality}</p> */}
+                {/* <p>{p.organic ? "🌱 Organic" : "❌ Non-Organic"}</p> */}
 
                 {/* Edit/Delete */}
                 <div className="actions">

@@ -53,7 +53,7 @@ function CropDetails() {
         <p>{crop.description || "No description provided"}</p>
 
         {/* Image Gallery */}
-        <div className="crop-image-gallery">
+        {/* <div className="crop-image-gallery">
           {crop.images && crop.images.length > 0 ? (
             crop.images.map((img, idx) => (
               <img
@@ -70,7 +70,7 @@ function CropDetails() {
           ) : (
             <img src="/default-crop.jpg" alt="default" className="crop-img" />
           )}
-        </div>
+        </div> */}
 
         {/* Crop Info */}
         <div className="crop-info">
