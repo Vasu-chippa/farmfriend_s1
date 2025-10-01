@@ -1,0 +1,5 @@
+/* apps/frontend/src/pages/Agent/Dashboard/AgentDashboard.css */
+.mini-bars { display:flex; gap:12px; align-items:flex-end; padding-top: 8px; }
+.mini-bar-item { text-align:center; width:70px; }
+.mini-bar-item .bar { width: 100%; background: linear-gradient(180deg,#60a5fa,#2563eb); border-radius:6px; transition:height .3s; }
+.mini-bar-item .label { font-size:12px; margin-top:6px; color:#374151; }

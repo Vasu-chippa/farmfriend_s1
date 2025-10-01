@@ -40,10 +40,10 @@ const Marketplace = () => {
         )}
 
         {products.map((p) => {
-          const imgPath =
-            p.images && p.images.length
-              ? `http://localhost:5000${p.images[0]}`
-              : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+          // const imgPath =
+          //   p.images && p.images.length
+          //     ? `http://localhost:5000${p.images[0]}`
+          //     : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
 
           return (
             <div key={p._id} className="mp-card">
@@ -51,27 +51,27 @@ const Marketplace = () => {
                 className="mp-card-image"
                 onClick={() => navigate(`/buyer/marketplace/${p._id}`)}
               >
-                <img
+                {/* <img
                   src={imgPath}
                   alt={p.name}
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
                   }}
-                />
+                /> */}
               </div>
 
               <div className="mp-card-body">
                 <h3 className="mp-card-title">{p.name}</h3>
-                <p className="mp-card-desc">{p.description || "No description"}</p>
+                {/* <p className="mp-card-desc">{p.description || "No description"}</p> */}
 
                 <div   onClick={() => navigate(`/buyer/marketplace/${p._id}`)}
                       className="mp-meta">
                   <div><strong>Price:</strong> ₹{p.price}/kg</div>
                   <div><strong>Qty:</strong> {p.quantity} kg</div>
-                  <div><strong>Quality:</strong> {p.quality || "-"}</div>
-                  <div><strong>Organic:</strong> {p.isOrganic ? "✅ Yes" : "❌ No"}</div>
-                  <div className="mp-farmer"><strong>Farmer:</strong> {p.farmer?.name || "Unknown"}</div>
+                  {/* <div><strong>Quality:</strong> {p.quality || "-"}</div> */}
+                  {/* <div><strong>Organic:</strong> {p.isOrganic ? "✅ Yes" : "❌ No"}</div> */}
+                  {/* <div className="mp-farmer"><strong>Farmer:</strong> {p.farmer?.name || "Unknown"}</div> */}
                 </div>
 
                 <div className="mp-actions">

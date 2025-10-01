@@ -1,0 +1,1015 @@
+ Provide backend controller updates for getAgentDashboard, listProductsForAgent, getOrdersForAgent, getAgentFarmers, getAgentProfile (I can generate code that fits your models).
+
+ Integrate an AgentLayout wrapper (wraps sidebar + main + top header).
+
+ Add realtime refresh via websockets (optional).
+
+ Add export (CSV/PDF) on Farmers / Orders pages.
+
+ Add a toggle to show/hide sidebar on small screens
+
+ focus on above points.
+
+ ___________________________
+
+ just look on these if any change need tell me 
+ import mongoose from "mongoose";
+
+const cropSchema = new mongoose.Schema({
+  farmer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  name: { type: String, required: true },
+  description: { type: String },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true },
+  image: { type: String, default: "" }, // ✅ keep single image for now
+  status: {
+    type: String,
+    enum: ["Active", "Completed", "Hold"],
+    default: "Active",
+  },
+  profit: { type: Number, default: 0 },
+  dateAdded: { type: Date, default: Date.now },
+  dateCompleted: { type: Date },
+});
+
+export default mongoose.model("Crop", cropSchema);
+___________________________
+import mongoose from "mongoose";
+
+const orderSchema = new mongoose.Schema(
+  {
+    buyer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+    quantity: { type: Number, required: true },
+    price: { type: Number, required: true }, // price per unit at time of order
+    total: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ["Pending", "Completed", "Cancelled"],
+      default: "Pending",
+    },
+  },
+  { timestamps: true }
+);
+
+const Order = mongoose.model("Order", orderSchema);
+export default Order;
+___________________________
+
+// backend/src/models/User.js
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    fullName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ["farmer", "buyer", "agent", "admin"],
+      default: "farmer",
+    },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("User", userSchema);
+__________________________________
+// apps/backend/src/models/Agent.js
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+
+const agentSchema = new mongoose.Schema({
+  fullName: { type: String, required: true, trim: true },
+  email: { type: String, required: true, lowercase: true, unique: true },
+  password: { type: String, required: true },
+  phone: { type: String },
+  region: { type: String },
+  commissionEarned: { type: Number, default: 0 },
+  role: { type: String, default: "agent" },
+  createdAt: { type: Date, default: Date.now },
+});
+
+// Hash password when saving (only if modified)
+agentSchema.pre("save", async function(next) {
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// method to compare password
+agentSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+export default mongoose.model("Agent", agentSchema);
+___________________________
+
+// backend/src/models/Buyer.js
+import mongoose from "mongoose";
+
+const buyerSchema = new mongoose.Schema(
+  {
+    fullName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    company: { type: String },
+    role: { type: String, default: "buyer" }
+  },
+  { timestamps: true }
+);
+
+const Buyer = mongoose.model("Buyer", buyerSchema);
+export default Buyer;
+__________________________________
+// backend/src/models/Product.js
+import mongoose from "mongoose";
+
+const productSchema = new mongoose.Schema(
+  {
+    farmer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    name: { type: String, required: true },
+    description: { type: String },
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true },
+    quality: { type: String },
+    isOrganic: { type: Boolean, default: false },
+    images: [{ type: String }],
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Product", productSchema);
+_______________________________________
+import mongoose from "mongoose";
+
+const harvestSchema = new mongoose.Schema(
+  {
+    farmer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    crops: [
+      {
+        cropId: { type: mongoose.Schema.Types.ObjectId, ref: "Crop", required: true },
+        name: String,
+        price: Number,
+        quantity: Number,
+        image: String,
+        category: String,
+        quality: String,
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Harvest", harvestSchema);
+__________________________________
+import mongoose from "mongoose";
+
+const orderSchema = new mongoose.Schema(
+  {
+    buyer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+    quantity: { type: Number, required: true },
+    price: { type: Number, required: true }, // price per unit at time of order
+    total: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ["Pending", "Completed", "Cancelled"],
+      default: "Pending",
+    },
+  },
+  { timestamps: true }
+);
+
+const Order = mongoose.model("Order", orderSchema);
+export default Order;
+___________________________
+
+look on these.
+___________________________
+// apps/backend/server.js
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import morgan from "morgan";
+import mongoose from "mongoose";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Import routes
+import adminRoutes from "./src/routes/adminRoutes.js";
+import agentRoutes from "./src/routes/agentRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import buyerRoutes from "./src/routes/buyerRoutes.js";
+import farmerRoutes from "./src/routes/farmerRoutes.js";
+import harvestRoutes from "./src/routes/harvestRoutes.js";
+import cropRecordRoutes from "./src/routes/cropRecordRoutes.js";
+import cropRoutes from "./src/routes/cropRoutes.js";
+import orderRoutes from "./src/routes/orderRoutes.js";
+import productRoutes from "./src/routes/productRoutes.js";
+
+// Load environment variables
+dotenv.config();
+
+// Initialize express app
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+app.use(morgan("dev"));
+
+// Static folder for uploaded images
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "src", "uploads")));
+
+// Health check route
+app.get("/", (req, res) => {
+  res.send("✅ FarmFriend Backend is running...");
+});
+
+// Routes
+app.use("/api/orders", orderRoutes);
+app.use("/api/admins", adminRoutes);
+app.use("/api/agents", agentRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/buyers", buyerRoutes);
+app.use("/api/farmers", farmerRoutes);
+app.use("/api/crops", cropRoutes);
+app.use("/api/harvest", harvestRoutes);
+app.use("/api/crop-records", cropRecordRoutes);
+app.use("/api/marketplace", productRoutes);
+
+// Database connection
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:", error.message);
+    // ❌ Don't exit directly on Render; let it retry
+  }
+};
+
+connectDB();
+
+// Server listening
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+__________________________________
+
+also add the that imports in app.js of agent
+/* apps/frontend/src/App.js */
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+
+// Guards
+import RequireAuth from "./components/guards/RequireAuth";
+
+// Layouts
+import AdminLayout from "./layouts/AdminLayout";
+import BuyerLayout from "./layouts/BuyerLayout";
+
+// Home
+import Home from "./pages/Home/Home";
+import NotFound from "./pages/NotFound/NotFound";
+
+// Auth Pages
+import FarmerLogin from "./pages/Auth/FarmerLogin/FarmerLogin";
+import FarmerRegister from "./pages/Auth/FarmerRegister/FarmerRegister";
+import BuyerLogin from "./pages/Auth/BuyerLogin/BuyerLogin";
+import BuyerRegister from "./pages/Auth/BuyerRegister/BuyerRegister";
+import AgentLogin from "./pages/Auth/AgentLogin/AgentLogin";
+import AdminLogin from "./pages/Auth/AdminLogin/AdminLogin";
+
+// Farmer Section
+import FarmerDashboard from "./pages/Farmer/Dashboard/FarmerDashboard";
+import FarmerCrops from "./pages/Farmer/Crops/FarmerCrops";
+import HarvestList from "./pages/Farmer/Harvest/HarvestList";
+import CropDetailsView from "./pages/Farmer/Crops/CropDetailsView";
+import CropDetails from "./pages/Farmer/Marketplace/CropDetails";
+import ExpenseTracker from "./pages/Farmer/ExpenseTracker/ExpenseTracker";
+import FarmerMarketplace from "./pages/Farmer/Marketplace/FarmerMarketplace";
+import FarmerProfile from "./pages/Farmer/Profile/FarmerProfile";
+import CropRecords from "./pages/Farmer/Harvest/CropRecords";
+
+// Buyer Section
+import BuyerDashboard from "./pages/Buyer/Dashboard/BuyerDashboard";
+import Marketplace from "./pages/Buyer/Marketplace/Marketplace";
+import CropPurchase from "./pages/Buyer/CropPurchase/CropPurchase";
+import MyOrders from "./pages/Buyer/Orders/MyOrders";
+import Profile from "./pages/Buyer/Profile/Profile";
+
+// Agent Section
+import AgentDashboard from "./pages/Agent/Dashboard/AgentDashboard";
+
+// Admin Section
+import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
+import FarmersList from "./pages/Admin/FarmersList";
+import BuyersList from "./pages/Admin/BuyersList";
+import AgentsList from "./pages/Admin/AgentsList";
+
+function App() {
+  return (
+    <>
+      <Navbar />
+      <Routes>
+        {/* Home */}
+        <Route path="/" element={<Home />} />
+
+        {/* Auth */}
+        <Route path="/farmer/login" element={<FarmerLogin />} />
+        <Route path="/farmer/register" element={<FarmerRegister />} />
+        <Route path="/buyer/login" element={<BuyerLogin />} />
+        <Route path="/buyer/register" element={<BuyerRegister />} />
+        <Route path="/agent/login" element={<AgentLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Farmer Protected Routes */}
+        <Route
+          path="/farmer/dashboard"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/crops"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerCrops />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/harvest"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <HarvestList />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/crop-details/:id"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <CropDetailsView />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/expenses"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <ExpenseTracker />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/marketplace"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerMarketplace />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/marketplace/:id"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <CropDetails />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/profile"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/crop-records/:cropId"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <CropRecords />
+            </RequireAuth>
+          }
+        />
+
+        {/* Buyer Protected Routes */}
+        <Route
+          path="/buyer/dashboard"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <BuyerDashboard />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/marketplace"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <Marketplace />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/marketplace/:id"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <CropPurchase />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/orders"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <MyOrders />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/profile"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <Profile />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+
+        {/* Agent */}
+        <Route
+          path="/agent/dashboard"
+          element={
+            <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+              <AgentDashboard />
+            </RequireAuth>
+          }
+        />
+
+        {/* Admin */}
+        <Route
+          element={
+            <RequireAuth allowedRoles={["admin"]} redirectTo="/admin/login" />
+          }
+        >
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="farmers" element={<FarmersList />} />
+            <Route path="buyers" element={<BuyersList />} />
+            <Route path="agents" element={<AgentsList />} />
+          </Route>
+        </Route>
+
+        {/* Not Found */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}
+
+export default App;
+__________________________________
+
+as a agent i want look into the 
+1.->dashboard shows pending orders , completed orders,   etc like that.
+2-> farmer page shows a btn at top right side add farmer means he can add directly with register form of farmer, and edit existing farmer details (like password , address etc).
+at the famrers page show farmer table with his details with location , name, email, phno , age , crops harveset etc in a table . also keep an option search bar if possible .
+he can view who are harvesting these crops (ex : maize is harvesting ny 20 farmers, beans by 32 farmers   etc like that.)
+compalints displayed on feedback section.
+suggest me here more features , responsibilities.
+
+3->  create agentbuyer page , then it shows
+same like agentfarmers , suggest me more features , responsibilities..
+4-> in Agentorders page shows the pending orders by one by one FCFS model.
+ he can click on approved/rejected or something the oder status will  be completed/Cancelled.
+ suggest me here 
+ ___________________________
+
+5-> also create a  payment section with minimal features
+
+6-> in agentprofile he can view his details like name , mail, phno, addrss, update password, or edit his details
+___________________________
+
+i want to insert an agent(mailid, password) through project terminal(vscode terminal project root). explain the steps .
+_______________________________________
+
+
+
+
+
+
+
+
+//ff/backend/scripts/createAgent.js
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import Agent from "../src/models/Agent.js";
+
+dotenv.config();
+
+const createAgent = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+
+    const agent = new Agent({
+      fullName: "agentone",
+      email: "agentone@gmail.com",
+      password: "agentone",
+      phone: "90000000",
+      region: "Mulugu"
+    });
+
+    await agent.save();
+    console.log("✅ Agent created:", agent.email);
+    process.exit();
+  } catch (err) {
+    console.error("❌ Error creating agent:", err.message);
+    process.exit(1);
+  }
+};
+
+createAgent();
+
+
+
+PS C:\Users\PC\Documents\web projects\ff\ffv1\ff> cd backend
+PS C:\Users\PC\Documents\web projects\ff\ffv1\ff\backend> node scripts/createAgent.js
+❌ Error creating agent: E11000 duplicate key error collection: farmfriend.agents index: email_1 dup key: { email: "agent1@example.com" }
+PS C:\Users\PC\Documents\web projects\ff\ffv1\ff\backend> node scripts/createAgent.js
+❌ Error creating agent: E11000 duplicate key error collection: farmfriend.agents index: email_1 dup key: { email: "agent1@example.com" }
+PS C:\Users\PC\Documents\web projects\ff\ffv1\ff\backend> node scripts/createAgent.js
+✅ Agent created: agentone@gmail.com
+PS C:\Users\PC\Documents\web projects\ff\ffv1\ff\backend> 
+
+when i hit login with these credentials shows login failed , why? can u read these files
+______________
+// apps/backend/src/middlewares/authMiddleware.js
+import jwt from "jsonwebtoken";
+
+/**
+ * protect middleware:
+ * - verifies token
+ * - sets req.user = { _id, id, role } (normalized)
+ */
+export const protect = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token, authorization denied" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // normalized user object: always provide _id
+    req.user = {
+      ...decoded,
+      _id: decoded._id || decoded.id || decoded.userId || decoded.uid,
+    };
+
+    next();
+  } catch (error) {
+    console.error("Auth protect error:", error.message);
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
+// restrict roles
+export const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ message: "Access denied: insufficient role" });
+  }
+  next();
+};
+_______________________________________
+import User from "../models/User.js";
+import { generateToken } from "../utils/generateToken.js";
+import bcrypt from "bcryptjs";
+
+// @desc    Register a new user (farmer, buyer, agent, admin)
+// @route   POST /api/auth/register
+// @access  Public
+export const registerUser = async (req, res) => {
+  try {
+    const { fullName, email, password, role, landSize } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // ✅ Hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      fullName,
+      email,
+      password: hashedPassword,
+      role,
+      landSize,
+    });
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      token: generateToken(user._id, user.role),
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @desc    Login user
+// @route   POST /api/auth/login
+// @access  Public
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    // ✅ Compare entered password with hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    return res.json({
+      message: "Login successful",
+      token: generateToken(user._id, user.role),
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+_______________________________________
+
+// apps/backend/server.js
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import morgan from "morgan";
+import mongoose from "mongoose";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Import routes
+import adminRoutes from "./src/routes/adminRoutes.js";
+import agentRoutes from "./src/routes/agentRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import buyerRoutes from "./src/routes/buyerRoutes.js";
+import farmerRoutes from "./src/routes/farmerRoutes.js";
+import harvestRoutes from "./src/routes/harvestRoutes.js";
+import cropRecordRoutes from "./src/routes/cropRecordRoutes.js";
+import cropRoutes from "./src/routes/cropRoutes.js";
+import orderRoutes from "./src/routes/orderRoutes.js";
+import productRoutes from "./src/routes/productRoutes.js";
+
+// Load environment variables
+dotenv.config();
+
+// Initialize express app
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+app.use(morgan("dev"));
+
+// Static folder for uploaded images
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "src", "uploads")));
+
+// Health check route
+app.get("/", (req, res) => {
+  res.send("✅ FarmFriend Backend is running...");
+});
+
+// Routes
+app.use("/api/orders", orderRoutes);
+app.use("/api/admins", adminRoutes);
+app.use("/api/agents", agentRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/buyers", buyerRoutes);
+app.use("/api/farmers", farmerRoutes);
+app.use("/api/crops", cropRoutes);
+app.use("/api/harvest", harvestRoutes);
+app.use("/api/crop-records", cropRecordRoutes);
+app.use("/api/marketplace", productRoutes);
+
+// Database connection
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:", error.message);
+    // ❌ Don't exit directly on Render; let it retry
+  }
+};
+
+connectDB();
+
+// Server listening
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+___________________________
+import React, { useState } from "react";
+import axios from "axios";
+import "../Auth.css";  // ✅ common css
+
+function AgentLogin() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:5000/api/agents/login", { email, password });
+      alert("Login successful");
+    } catch (err) {
+      alert("Login failed");
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <h2>Agent Login</h2>
+      <form onSubmit={handleSubmit}>
+        <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+}
+
+export default AgentLogin;
+__________________________________
+/* apps/frontend/src/App.js */
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+
+// Guards
+import RequireAuth from "./components/guards/RequireAuth";
+
+// Layouts
+import AdminLayout from "./layouts/AdminLayout";
+import BuyerLayout from "./layouts/BuyerLayout";
+
+// Home
+import Home from "./pages/Home/Home";
+import NotFound from "./pages/NotFound/NotFound";
+
+// Auth Pages
+import FarmerLogin from "./pages/Auth/FarmerLogin/FarmerLogin";
+import FarmerRegister from "./pages/Auth/FarmerRegister/FarmerRegister";
+import BuyerLogin from "./pages/Auth/BuyerLogin/BuyerLogin";
+import BuyerRegister from "./pages/Auth/BuyerRegister/BuyerRegister";
+import AgentLogin from "./pages/Auth/AgentLogin/AgentLogin";
+import AdminLogin from "./pages/Auth/AdminLogin/AdminLogin";
+
+// Farmer Section
+import FarmerDashboard from "./pages/Farmer/Dashboard/FarmerDashboard";
+import FarmerCrops from "./pages/Farmer/Crops/FarmerCrops";
+import HarvestList from "./pages/Farmer/Harvest/HarvestList";
+import CropDetailsView from "./pages/Farmer/Crops/CropDetailsView";
+import CropDetails from "./pages/Farmer/Marketplace/CropDetails";
+import ExpenseTracker from "./pages/Farmer/ExpenseTracker/ExpenseTracker";
+import FarmerMarketplace from "./pages/Farmer/Marketplace/FarmerMarketplace";
+import FarmerProfile from "./pages/Farmer/Profile/FarmerProfile";
+import CropRecords from "./pages/Farmer/Harvest/CropRecords";
+
+// Buyer Section
+import BuyerDashboard from "./pages/Buyer/Dashboard/BuyerDashboard";
+import Marketplace from "./pages/Buyer/Marketplace/Marketplace";
+import CropPurchase from "./pages/Buyer/CropPurchase/CropPurchase";
+import MyOrders from "./pages/Buyer/Orders/MyOrders";
+import Profile from "./pages/Buyer/Profile/Profile";
+
+// Agent Section
+import AgentDashboard from "./pages/Agent/Dashboard/AgentDashboard";
+
+// Admin Section
+import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
+import FarmersList from "./pages/Admin/FarmersList";
+import BuyersList from "./pages/Admin/BuyersList";
+import AgentsList from "./pages/Admin/AgentsList";
+
+function App() {
+  return (
+    <>
+      <Navbar />
+      <Routes>
+        {/* Home */}
+        <Route path="/" element={<Home />} />
+
+        {/* Auth */}
+        <Route path="/farmer/login" element={<FarmerLogin />} />
+        <Route path="/farmer/register" element={<FarmerRegister />} />
+        <Route path="/buyer/login" element={<BuyerLogin />} />
+        <Route path="/buyer/register" element={<BuyerRegister />} />
+        <Route path="/agent/login" element={<AgentLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Farmer Protected Routes */}
+        <Route
+          path="/farmer/dashboard"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/crops"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerCrops />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/harvest"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <HarvestList />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/crop-details/:id"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <CropDetailsView />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/expenses"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <ExpenseTracker />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/marketplace"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerMarketplace />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/marketplace/:id"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <CropDetails />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/profile"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <FarmerProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/farmer/crop-records/:cropId"
+          element={
+            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+              <CropRecords />
+            </RequireAuth>
+          }
+        />
+
+        {/* Buyer Protected Routes */}
+        <Route
+          path="/buyer/dashboard"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <BuyerDashboard />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/marketplace"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <Marketplace />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/marketplace/:id"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <CropPurchase />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/orders"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <MyOrders />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/buyer/profile"
+          element={
+            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+              <BuyerLayout>
+                <Profile />
+              </BuyerLayout>
+            </RequireAuth>
+          }
+        />
+
+        {/* Agent */}
+        <Route
+          path="/agent/dashboard"
+          element={
+            <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+              <AgentDashboard />
+            </RequireAuth>
+          }
+        />
+
+        {/* Admin */}
+        <Route
+          element={
+            <RequireAuth allowedRoles={["admin"]} redirectTo="/admin/login" />
+          }
+        >
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="farmers" element={<FarmersList />} />
+            <Route path="buyers" element={<BuyersList />} />
+            <Route path="agents" element={<AgentsList />} />
+          </Route>
+        </Route>
+
+        {/* Not Found */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}
+
+export default App;
+
+

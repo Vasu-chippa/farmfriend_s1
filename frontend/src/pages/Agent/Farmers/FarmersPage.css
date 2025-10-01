@@ -1,0 +1,3 @@
+/* apps/frontend/src/pages/Agent/Farmers/AgentFarmers.css */
+/* extra spacing for farmers page */
+.panel.table table td .action { display:flex; gap:8px; }

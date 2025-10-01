@@ -49,7 +49,7 @@ function CropPurchase() {
       <BuyerSidebar />
       <div className="purchase-container">
         <div className="purchase-card">
-          <div className="image-section">
+          {/* <div className="image-section">
             <img
               src={
                 product.images?.length > 0
@@ -59,7 +59,7 @@ function CropPurchase() {
               alt={product.name}
               className="crop-image"
             />
-          </div>
+          </div> */}
 
           <div className="details-section">
             <h2 className="crop-title">{product.name}</h2>

@@ -1,0 +1,62 @@
+/* apps/frontend/src/components/AgentSidebar.css */
+.agent-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px; /* as requested */
+  height: 100vh;
+  background: linear-gradient(180deg,#0f172a,#111827);
+  color: #fff;
+  padding: 26px 18px;
+  box-shadow: 2px 0 8px rgba(2,6,23,0.2);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  z-index: 100;
+}
+
+.agent-brand {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 18px;
+  text-align:center;
+  color:#f8fafc;
+}
+
+.agent-sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.agent-sidebar nav li {
+  margin: 12px 0;
+}
+
+.agent-sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background .15s, color .15s, transform .08s;
+  font-weight: 600;
+}
+
+.agent-sidebar a:hover {
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  transform: translateX(4px);
+}
+
+.agent-sidebar a.active, .agent-sidebar a.active:hover {
+  background: linear-gradient(90deg,#2563eb,#06b6d4);
+  color: #fff;
+}
+
+.sidebar-footer {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align:center;
+  margin-top: 12px;
+}

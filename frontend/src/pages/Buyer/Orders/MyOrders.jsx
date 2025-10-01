@@ -74,7 +74,7 @@ const MyOrders = () => {
           <table className="orders-table">
             <thead>
               <tr>
-                <th>Image</th>
+               <th></th>
                 <th>Product</th>
                 <th>Quantity (kg)</th>
                 <th>Total Price</th>
@@ -87,7 +87,7 @@ const MyOrders = () => {
               {orders.map((order) => (
                 <tr key={order._id}>
                   <td>
-                    <img
+                    {/* <img
   src={
     order.product?.images?.length > 0
       ? `http://localhost:5000${order.product.images[0]}`
@@ -95,7 +95,7 @@ const MyOrders = () => {
   }
   alt={order.product?.name}
   className="order-img"
-/>
+/> */}
 
                   </td>
                   <td>{order.product?.name}</td>

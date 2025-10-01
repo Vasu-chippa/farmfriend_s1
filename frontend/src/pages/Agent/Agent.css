@@ -1,0 +1,80 @@
+/* apps/frontend/src/pages/Agent/Agent.css */
+/* Apply to all agent pages: leave 300px at left for sidebar */
+.agent-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* main content area (leave 300px space) */
+.agent-main {
+  margin-left: 300px; /* leave space for sidebar */
+  padding: 28px;
+  width: calc(100% - 300px);
+  box-sizing: border-box;
+}
+
+/* common panel card */
+.panel {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(2,6,23,0.06);
+}
+
+/* small utility */
+.small { font-size: 12px; color: #6b7280; }
+.pill { background: #eef2ff; color:#3730a3; padding:6px 10px; border-radius:999px; font-weight:700; }
+.tag-approved { background:#ecfdf5; color:#064e3b; padding:6px 8px; border-radius:6px; font-weight:600; }
+.tag-pending { background:#fffbeb; color:#92400e; padding:6px 8px; border-radius:6px; font-weight:600; }
+
+/* table */
+.table {
+  overflow-x:auto;
+  margin-top: 10px;
+}
+
+.table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table table th, .table table td {
+  text-align:left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.btn {
+  background: #2563eb;
+  color: #fff;
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight:700;
+}
+
+.btn.secondary {
+  background: #e6eefc;
+  color:#2563eb;
+}
+
+.input {
+  border: 1px solid #e6eefc;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* grid for KPI */
+.kpi-grid { display:grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:12px; }
+.kpi { padding:18px; border-radius:10px; background:#fff; box-shadow: 0 6px 16px rgba(2,6,23,0.04); text-align:center; }
+.kpi .value { font-size:28px; font-weight:800; color:#0f172a; }
+.kpi .label { color:#6b7280; font-weight:600; }
+
+/* responsive */
+@media (max-width:900px) {
+  .agent-main { margin-left: 0; width: 100%; padding: 12px; }
+  .agent-sidebar { position:relative; width:100%; height:auto; display:none; } /* small screens hide fixed sidebar (you can toggle) */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
