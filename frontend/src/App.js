@@ -47,6 +47,8 @@ import AgentFarmers from "./pages/Agent/Farmers/FarmersPage";
 import AgentOrders from "./pages/Agent/Orders/AgentOrders";
 import AgentProfile from "./pages/Agent/Profile/AgentProfile";
 import AgentMarketplace from  "./pages/Agent/Marketplace/AgentMarketplace"
+import AgentPayments from "./pages/Agent/Orders/AgentPayments";
+
 
 // Admin Section
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
@@ -248,6 +250,16 @@ function App() {
   }
 />
 
+<Route
+  path="/agent/payments"
+  element={
+    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+      <AgentLayout>
+        <AgentPayments />
+      </AgentLayout>
+    </RequireAuth>
+  }
+/>
 
         {/* Admin Protected Routes */}
         <Route

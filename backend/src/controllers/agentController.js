@@ -284,3 +284,42 @@ export const updateAgentProfile = async (req, res) => {
       .json({ message: "Error updating profile", error: error.message });
   }
 };
+
+// =================== PAYMENTS ===================
+export const getAgentPayments = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("buyer", "fullName email")
+      .populate({
+        path: "product",
+        select: "name price farmer",
+        populate: { path: "farmer", select: "fullName email" },
+      });
+
+    // map the order data into a payment-style response
+    const payments = orders.map((order) => ({
+      _id: order._id,
+      transactionId: order.payment?.transactionId || "—",
+      paymentDate: order.payment?.paymentDate || order.createdAt,
+      paymentAmount: order.payment?.amount || order.total,
+      orderId: order._id,
+      buyer: order.buyer
+        ? {
+            fullName: order.buyer.fullName,
+            email: order.buyer.email,
+          }
+        : null,
+      paymentStatus: order.payment?.status || "Unpaid",
+      paymentMethod: order.payment?.method || "Other",
+      notes: order.payment?.notes || "",
+    }));
+
+    res.json(payments);
+  } catch (error) {
+    console.error("getAgentPayments:", error);
+    res.status(500).json({
+      message: "Error fetching payments",
+      error: error.message,
+    });
+  }
+};

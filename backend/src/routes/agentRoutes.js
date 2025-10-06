@@ -14,6 +14,7 @@ import {
   approveOrder,
   updateOrderStatus,
   getAgentDashboard,
+  getAgentPayments,
 } from "../controllers/agentController.js";
 import { protect, authorizeRoles } from "../middlewares/authMiddleware.js";
 
@@ -39,6 +40,10 @@ router.put("/products/:productId/approve", protect, authorizeRoles("agent"), app
 router.get("/orders", protect, authorizeRoles("agent"), getOrdersForAgent);
 router.put("/orders/:id/approve", protect, authorizeRoles("agent"), approveOrder);
 router.put("/orders/:id/status", protect, authorizeRoles("agent"), updateOrderStatus);
+
+// Payments
+router.get("/payments", protect, authorizeRoles("agent"), getAgentPayments);
+
 
 // Profile
 router.get("/profile", protect, authorizeRoles("agent"), getAgentProfile);

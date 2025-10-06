@@ -22,6 +22,11 @@ function AgentSidebar() {
             <NavLink to="/agent/orders" className={({isActive}) => isActive ? "active" : ""}>📦 Orders</NavLink>
           </li>
           <li>
+            <NavLink to="/agent/payments" className={({isActive}) => isActive ? "active" : ""}>💰 Payments</NavLink>
+          </li>
+          
+
+          <li>
             <NavLink to="/agent/profile" className={({isActive}) => isActive ? "active" : ""}>👤 Profile</NavLink>
           </li>
         </ul>
