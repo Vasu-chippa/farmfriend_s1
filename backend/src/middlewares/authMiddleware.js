@@ -28,6 +28,13 @@ export const protect = (req, res, next) => {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
+export const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Admins only." });
+  }
+};
 
 // restrict roles
 export const authorizeRoles = (...roles) => (req, res, next) => {

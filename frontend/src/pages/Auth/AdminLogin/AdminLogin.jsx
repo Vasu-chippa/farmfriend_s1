@@ -1,7 +1,8 @@
 // apps/frontend/src/pages/Auth/AdminLogin/AdminLogin.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
+import API from "../../../api";
 import { setAuth } from "../../../utils/auth";
 import "../../Auth/Auth.css";
 
@@ -14,7 +15,7 @@ const AdminLogin = () => {
     e.preventDefault();
 
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", {
+      const { data } = await API.post("/auth/login", {
         email,
         password,
       });

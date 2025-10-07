@@ -437,3 +437,389 @@ section h2 {
   .animated-module-card p { display: none; }
   .feature-icon { font-size: 2rem; }
 }
+/* --- ENHANCED BUTTON STYLES --- */
+
+/* Base Button Styles */
+.btn-primary, .btn-ghost {
+  position: relative;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  min-width: 160px;
+}
+
+/* Primary Button - Enhanced */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-green) 100%);
+  color: var(--text-light);
+  box-shadow: 
+    0 8px 25px rgba(116, 198, 157, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-primary:hover::after {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #95d5b2 0%, var(--accent-color) 100%);
+  box-shadow: 
+    0 12px 35px rgba(116, 198, 157, 0.5),
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+.btn-primary:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 20px rgba(116, 198, 157, 0.4),
+    0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ghost Button - Enhanced */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-light);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.btn-ghost::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 50px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-ghost:hover::before {
+  opacity: 1;
+}
+
+.btn-ghost::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, 
+    var(--accent-color) 0%, 
+    rgba(255, 255, 255, 0.3) 50%,
+    var(--accent-color) 100%);
+  border-radius: 52px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.btn-ghost:hover::after {
+  opacity: 1;
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+.btn-ghost:hover {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 25px rgba(116, 198, 157, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+.btn-ghost:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 15px rgba(116, 198, 157, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Quick Start Section Buttons */
+.quick-start .btn-primary {
+  background: linear-gradient(135deg, var(--accent-color) 0%, #52b788 100%);
+  box-shadow: 
+    0 8px 25px rgba(116, 198, 157, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.quick-start .btn-primary:hover {
+  background: linear-gradient(135deg, #95d5b2 0%, var(--accent-color) 100%);
+  box-shadow: 
+    0 12px 35px rgba(116, 198, 157, 0.6),
+    0 6px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.quick-start .btn-ghost {
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  color: var(--text-light);
+}
+
+.quick-start .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
+}
+
+/* Button Icons (Optional) */
+.btn-primary::before,
+.btn-ghost::before {
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+/* Button Loading Animation */
+.btn-primary.loading,
+.btn-ghost.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.btn-primary.loading::after,
+.btn-ghost.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: button-spin 1s linear infinite;
+}
+
+/* New Animations */
+@keyframes border-glow {
+  0%, 100% {
+    opacity: 1;
+    background-position: 0% 50%;
+  }
+  50% {
+    opacity: 0.8;
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes button-spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes button-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 8px 25px rgba(116, 198, 157, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 8px 30px rgba(116, 198, 157, 0.5),
+      0 6px 18px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Special Hover Effects */
+.btn-primary.magic:hover {
+  animation: button-pulse 2s ease-in-out infinite;
+}
+
+.btn-ghost.glow:hover {
+  box-shadow: 
+    0 0 20px rgba(116, 198, 157, 0.4),
+    0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Button Focus States */
+.btn-primary:focus,
+.btn-ghost:focus {
+  outline: none;
+  box-shadow: 
+    0 0 0 3px rgba(116, 198, 157, 0.3),
+    0 8px 25px rgba(116, 198, 157, 0.3);
+}
+
+.btn-ghost:focus {
+  box-shadow: 
+    0 0 0 3px rgba(116, 198, 157, 0.3),
+    0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Disabled States */
+.btn-primary:disabled,
+.btn-ghost:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-primary:disabled:hover,
+.btn-ghost:disabled:hover {
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-green) 100%);
+  box-shadow: 
+    0 4px 15px rgba(116, 198, 157, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-ghost:disabled:hover {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+}
+
+/* Responsive Button Styles */
+@media (max-width: 768px) {
+  .btn-primary, .btn-ghost {
+    padding: 14px 28px;
+    font-size: 1rem;
+    min-width: 140px;
+  }
+  
+  .hero-cta {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .hero-cta .btn-primary,
+  .hero-cta .btn-ghost {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-primary, .btn-ghost {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    min-width: 120px;
+  }
+}
+
+/* Button Group Styles */
+.hero-cta {
+  display: flex;
+  gap: 20px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.quick-start .hero-cta {
+  justify-content: center;
+}
+
+/* Enhanced Button Text */
+.btn-primary span,
+.btn-ghost span {
+  position: relative;
+  z-index: 2;
+}
+
+/* Button Icon Styles */
+.btn-primary .btn-icon,
+.btn-ghost .btn-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-primary:hover .btn-icon,
+.btn-ghost:hover .btn-icon {
+  transform: translateX(3px);
+}
+
+/* Special Button Variations */
+.btn-primary.gradient-shift {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-primary.gradient-shift:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.btn-ghost.neon {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  text-shadow: 0 0 10px rgba(116, 198, 157, 0.5);
+}
+
+.btn-ghost.neon:hover {
+  background: var(--accent-color);
+  color: var(--dark-green);
+  box-shadow: 0 0 20px rgba(116, 198, 157, 0.8);
+}
+
+/* Button Scale Animation */
+@keyframes button-scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.btn-primary.animated,
+.btn-ghost.animated {
+  animation: button-scale 2s ease-in-out infinite;
+}
