@@ -1,5 +1,4 @@
 // apps/frontend/src/pages/Auth/BuyerLogin/BuyerLogin.jsx
-
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -17,16 +16,12 @@ function BuyerLogin() {
         email,
         password,
       });
-
       // ✅ Assuming backend returns { token, user }
       const { token, user } = res.data;
-
       // Save in localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-
       alert("Login successful ✅");
-
       // ✅ Redirect buyer to Buyer Dashboard
       navigate("/buyer/dashboard");
     } catch (err) {
