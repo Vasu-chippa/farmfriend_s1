@@ -9,9 +9,9 @@ const FarmerDashboard = () => {
   const [stats, setStats] = useState({
     totalCrops: 0,
     totalExpenses: 0,
-    profit: 0,
+    profitOrLoss: 0,
     totalHarvest: 0,
-    expectedRevenue: 0,
+    totalIncome: 0,
   });
 
   const [notifications, setNotifications] = useState([]);
@@ -19,38 +19,16 @@ const FarmerDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [cropsRes, expensesRes, harvestRes] = await Promise.all([
-          API.get("/crops/mycrops"),
-          API.get("/expenses"),
-          API.get("/harvest"),
-        ]);
-
-        const totalCrops = cropsRes.data.length;
-        const totalExpenses = expensesRes.data.reduce((sum, e) => sum + e.amount, 0);
-        const expectedRevenue = harvestRes.data.reduce(
-          (sum, h) => sum + (h.quantity * h.price),
-          0
-        );
-        const totalHarvest = harvestRes.data.length;
-
-        setStats({
-          totalCrops,
-          totalExpenses,
-          profit: expectedRevenue - totalExpenses,
-          totalHarvest,
-          expectedRevenue,
-        });
-
-        // Example notifications
+        const res = await API.get("/farmers/stats");
+        setStats(res.data);
         setNotifications([
-          { id: 1, text: `${totalHarvest} crops in harvest list.` },
-          { id: 2, text: `Expected revenue: ₹${expectedRevenue}` },
+          { id: 1, text: `${res.data.totalHarvest} crops harvested.` },
+          { id: 2, text: `Total income: ₹${res.data.totalIncome}` },
         ]);
       } catch (err) {
         console.error("Error fetching stats", err);
       }
     };
-
     fetchStats();
   }, []);
 
@@ -81,7 +59,7 @@ const FarmerDashboard = () => {
         </div>
         <div className="card">
           <h3>Profit / Loss</h3>
-          <p>{stats.profit >= 0 ? `+ ₹${stats.profit}` : `- ₹${Math.abs(stats.profit)}`}</p>
+          <p>{stats.profitOrLoss >= 0 ? `+ ₹${stats.profitOrLoss}` : `- ₹${Math.abs(stats.profitOrLoss)}`}</p>
         </div>
       </div>
 

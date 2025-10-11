@@ -1,45 +1,45 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React from "react";
+import { NavLink } from "react-router-dom";
 import "./BuyerSidebar.css";
-
+const links = [
+  { to: "/buyer/dashboard", icon: "📊", label: "Dashboard" },
+  { to: "/buyer/marketplace", icon: "🛒", label: "Marketplace" },
+  { to: "/buyer/orders", icon: "📦", label: "My Orders" },
+  { to: "/buyer/profile", icon: "👤", label: "Profile" },
+];
 const BuyerSidebar = () => {
-  const location = useLocation();
-  const [open, setOpen] = useState(true);
-
-  const links = [
-    { to: "/buyer/dashboard", icon: "📊", label: "Dashboard" },
-    { to: "/buyer/marketplace", icon: "🛒", label: "Marketplace" },
-    { to: "/buyer/orders", icon: "📦", label: "My Orders" },
-    { to: "/buyer/profile", icon: "👤", label: "Profile" },
-  ];
-
   return (
-    <div className={`sidebar-wrapper ${open ? "open" : "closed"}`}>
-      {/* Sidebar itself */}
-      <div className="buyer-sidebar">
-        <h2 className="logo">{open ? "FarmFriend" : "FF"}</h2>
+    <div className="sidebar-wrapper static-open">
+      <aside className="buyer-sidebar">
+        {/* Buyer Brand/Logo Section */}
+        <div className="buyer-brand">FarmFriend —
+          <br /> Buyer</div>
 
-        <ul>
-          {links.map((link) => (
-            <li
-              key={link.to}
-              className={location.pathname === link.to ? "active" : ""}
-            >
-              <Link to={link.to}>
-                <span className="icon">{link.icon}</span>
-                {open && <span className="text">{link.label}</span>}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Toggle button (always visible) */}
-      <button className="sidebar-toggle" onClick={() => setOpen(!open)}>
-        {open ? "<" : ">"}
-      </button>
+        <nav>
+          <ul>
+            {links.map((link) => (
+              <li key={link.to}>
+                <NavLink
+                  to={link.to}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                  title={link.label}
+                >
+                  <span className="icon">{link.icon}</span>
+                  <span className="text">{link.label}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        {/* Footer/User Info Section */}
+        <div className="sidebar-footer">
+          <small>
+            Logged as: <strong>{/* Replace with actual buyer name if available */}Buyer User</strong>
+          </small>
+        </div>
+      </aside>
+      {/* Removed: Toggle button JSX completely */}
     </div>
   );
 };
-
 export default BuyerSidebar;

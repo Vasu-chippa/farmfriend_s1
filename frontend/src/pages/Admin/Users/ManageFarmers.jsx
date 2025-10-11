@@ -6,10 +6,10 @@ import "../Users/ManageUsers.css";
 const ManageFarmers = () => {
   const [farmers, setFarmers] = useState([]);
   const [newFarmer, setNewFarmer] = useState({ fullName: "", email: "", password: "" });
-
+  
   const fetchFarmers = async () => {
     try {
-      const { data } = await API.get("/admin/farmers");
+      const { data } = await API.get("/admins/farmers");
       setFarmers(data);
     } catch (err) {
       console.error("Error fetching farmers:", err);
@@ -20,21 +20,22 @@ const ManageFarmers = () => {
     fetchFarmers();
   }, []);
 
-  const handleAdd = async () => {
-    try {
-      await API.post("/admin/farmers", newFarmer);
-      alert("Farmer added successfully!");
-      setNewFarmer({ fullName: "", email: "", password: "" });
-      fetchFarmers();
-    } catch (err) {
-      alert("Failed to add farmer");
-    }
-  };
+ const handleAdd = async () => {
+    try {
+      // EDIT HERE: Change the endpoint from the WRONG '/admin/farmers' to the CORRECT '/admins/farmers'
+      await API.post("/admins/farmers", newFarmer); 
+      alert("Farmer added successfully!");
+      setNewFarmer({ fullName: "", email: "", password: "" });
+      fetchFarmers();
+    } catch (err) {
+      alert("Failed to add farmer");
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this farmer?")) return;
     try {
-      await API.delete(`/admin/farmers/${id}`);
+      await API.delete(`/admins/farmers/${id}`);
       fetchFarmers();
     } catch (err) {
       alert("Error deleting farmer");

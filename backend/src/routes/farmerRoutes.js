@@ -182,5 +182,38 @@ router.delete("/expenses/:id", protect, authorizeRoles("farmer"), async (req, re
   }
 });
 
+/**
+ * @route   GET /api/farmers/stats
+ * @desc    Get dashboard stats for logged-in farmer
+ */
+router.get("/stats", protect, authorizeRoles("farmer"), async (req, res) => {
+  try {
+    const farmerId = req.user._id;
+    // Total Crops created by farmer
+    const totalCrops = await Product.countDocuments({ farmer: farmerId });
+    // Harvest crops count
+    const harvest = await Harvest.findOne({ farmer: farmerId });
+    const totalHarvest = harvest ? harvest.crops.length : 0;
+    // Farmer’s expenses
+    const expenses = await Expense.find({ farmer: farmerId });
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    // Total Income from harvest
+    const totalIncome = harvest
+      ? harvest.crops.reduce((sum, c) => sum + (c.price || 0) * (c.quantity || 0), 0)
+      : 0;
+    // Profit or Loss
+    const profitOrLoss = totalIncome - totalExpenses;
+    res.json({
+      totalCrops,
+      totalHarvest,
+      totalExpenses,
+      totalIncome,
+      profitOrLoss,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
 
 export default router;
