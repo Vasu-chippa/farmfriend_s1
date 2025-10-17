@@ -1,6 +1,6 @@
 // src/context/HarvestContext.jsx
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import API from "../api";
 
 export const HarvestContext = createContext();
 
@@ -11,7 +11,7 @@ export const HarvestProvider = ({ children }) => {
   // fetch harvest list
   const fetchHarvest = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/harvest", {
+      const res = await API.get("/harvest", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setHarvest(res.data.crops || []);
@@ -33,26 +33,15 @@ export const HarvestProvider = ({ children }) => {
       if (isInHarvest(crop._id)) {
         const harvestItem = harvest.find((h) => h.cropId === crop._id);
         if (!harvestItem) return;
-        await axios.delete(
-          `http://localhost:5000/api/harvest/${harvestItem._id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await API.delete(`/harvest/${harvestItem._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setHarvest((prev) => prev.filter((h) => h.cropId !== crop._id));
       } else {
-        const res = await axios.post(
-          "http://localhost:5000/api/harvest",
-          {
-            cropId: crop._id,
-            name: crop.name,
-            category: crop.category || "General",
-            quality: crop.quality || "Organic",
-            price: crop.price || 0,
-            quantity: crop.quantity || 0,
-            image: `/cropimages/${crop.name.toLowerCase()}.jpeg`,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setHarvest((prev) => [...prev, res.data]);
+        const res = await API.post("/harvest", { cropId: crop._id, crop: crop.name, status: "In Cart" }, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setHarvest((prev) => [...prev, res.data.harvest]);
       }
     } catch (err) {
       console.error("❌ Error toggling harvest:", err);
@@ -60,7 +49,7 @@ export const HarvestProvider = ({ children }) => {
   };
 
   return (
-    <HarvestContext.Provider value={{ harvest, isInHarvest, toggleHarvest }}>
+    <HarvestContext.Provider value={{ harvest, toggleHarvest, isInHarvest, fetchHarvest }}>
       {children}
     </HarvestContext.Provider>
   );

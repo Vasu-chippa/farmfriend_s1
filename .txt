@@ -1,1 +1,52 @@
-empty
+Prompt for CoPilot
+
+🧠 You are working inside the FarmFriend full-stack MERN app.
+I want you to professionally implement inventory tracking and profit/loss calculation for the farmer role.
+
+Here’s what to do step-by-step:
+
+In the Product model:
+
+Add fields: totalQuantity, availableQuantity, totalEarnings, isSoldOut, and expenses.
+
+In the orderController inside createOrder:
+
+After order creation, reduce availableQuantity in the product.
+
+Add to totalEarnings based on quantity * pricePerKg.
+
+Set isSoldOut = true if availableQuantity <= 0.
+
+In farmerController:
+
+Create getFarmerDashboardData which aggregates farmer’s total earnings, expenses, and computes profit/loss.
+
+On the frontend:
+
+Update Farmer Marketplace to display:
+
+Remaining quantity, total earned, and status.
+
+Hide edit/delete buttons when isSoldOut = true.
+
+In the Dashboard, show “Profit/Loss” comparison (Earnings – Expenses).
+
+Create a simple Notification model and logic that sends a message to farmer when a product is sold.
+
+Ensure all updates follow existing structure and authorization (use protect, authorizeRoles('farmer')).
+
+give also for payment method ,not currency use dummy money for now , but show success payment , failed payment ,like proffessional strucure and flow,
+
+
+_________
+
+“I want to integrate a dummy payment system in the FarmFriend MERN app.
+Add a Payment model with fields: orderId, buyerId, farmerId, amount, method, paymentId, status, createdAt.
+In orderController, simulate payment success or failure before order creation.
+Store payment and update product quantity and earnings only on success.
+Create getAllPayments in adminController and getAgentPayments in agentController.
+In frontend, add a payment method selection (UPI, Card, etc.) during order creation.
+Show payment history in Admin and Agent dashboards with color-coded status (Success = green, Failed = red, Pending = yellow).
+Use dummy payments (no real money). Make it clean, reusable, and consistent with existing API structure.”
+
+

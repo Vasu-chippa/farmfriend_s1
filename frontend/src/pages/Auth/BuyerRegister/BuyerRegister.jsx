@@ -14,11 +14,7 @@ function BuyerRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.post("/buyers/register", {
-        fullName,
-        email,
-        password,
-      });
+      await API.post("/buyers/register", { fullName, email, password });
       alert("✅ Buyer registered successfully");
     } catch (err) {
       alert("❌ Registration failed");

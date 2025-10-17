@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../../../api";
 
 const AddModal = ({ role, onClose, onAdded }) => {
   const [formData, setFormData] = useState({
@@ -17,24 +17,13 @@ const AddModal = ({ role, onClose, onAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:5000/api/admin/farmers",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      await API.post("/admin/farmers", formData);
       alert(`${role} added successfully`);
       onAdded(); // refresh list
       onClose(); // close modal
     } catch (err) {
       console.error(err);
-      alert(`Error adding ${role}`);
+      alert(`Failed to add ${role}`);
     }
   };
 
@@ -83,7 +72,6 @@ const AddModal = ({ role, onClose, onAdded }) => {
               onChange={handleChange}
             />
           )}
-
           <div className="modal-actions">
             <button type="submit" className="save-btn">Save</button>
             <button type="button" onClick={onClose} className="cancel-btn">

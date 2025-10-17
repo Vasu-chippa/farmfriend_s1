@@ -1,7 +1,7 @@
 /* apps/frontend/src/pages/Farmer/SelectCrop/CropDetails.jsx */
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../../api";
 import {
   LineChart,
   Line,
@@ -27,7 +27,7 @@ const CropDetails = () => {
   useEffect(() => {
     const fetchCropDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/crops/${cropId}`);
+        const res = await API.get(`/crops/${cropId}`);
         setCrop(res.data);
       } catch (err) {
         console.error(err);
@@ -45,7 +45,7 @@ const CropDetails = () => {
   // add crop to my list
   const handleAddToMyCrops = async () => {
     try {
-      await axios.post("http://localhost:5000/api/mycrops/add", { cropId });
+      await API.post("/mycrops/add", { cropId });
       alert("✅ Crop added to your list!");
       navigate("/farmer/crops");
     } catch (err) {

@@ -1,3 +1,6 @@
+
+// this is for agent, buyer, farmer login authentication and authorization. not working for admin.
+// src/components/guard/RequireAuth.jsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { getCurrentUser } from "../../services/authService";

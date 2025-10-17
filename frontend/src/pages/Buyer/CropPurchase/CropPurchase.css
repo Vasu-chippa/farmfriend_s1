@@ -1,29 +1,35 @@
-/* ========== Layout ========== */
+/* === Global Styles === */
+body {
+  background: #f5f7fa;
+  margin: 0;
+  font-family: 'Inter', sans-serif, "Segoe UI", Tahoma, Geneva, Verdana;
+}
+
+/* === Layout === */
 .purchase-layout {
   display: flex;
   min-height: 100vh;
   background: #f5f7fa;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .purchase-container {
   flex: 1;
-  margin-left: 220px; /* Sidebar space */
+  margin-left: 220px;
   padding: 40px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
 }
 
-/* ========== Card ========== */
+/* === Purchase Card === */
 .purchase-card {
   display: flex;
   flex-wrap: wrap;
   gap: 40px;
-  background: #ffffff;
+  background: #fff;
   padding: 30px;
   border-radius: 14px;
-  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   max-width: 1100px;
   width: 100%;
   animation: fadeIn 0.4s ease-in-out;
@@ -34,29 +40,7 @@
   transform: translateY(-3px);
 }
 
-/* ========== Image Section ========== */
-.image-section {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.crop-image {
-  width: 100%;
-  max-width: 420px;
-  height: 480px;
-  border-radius: 14px;
-  object-fit: cover;
-  box-shadow: 0px 4px 12px rgba(46, 125, 50, 0.25);
-  transition: transform 0.3s ease;
-}
-
-.crop-image:hover {
-  transform: scale(1.03);
-}
-
-/* ========== Details Section ========== */
+/* === Crop Details Section === */
 .details-section {
   flex: 2;
   display: flex;
@@ -80,71 +64,92 @@
 .crop-info {
   font-size: 1rem;
   color: #333;
-  padding: 6px 10px;
-  background: #f9fafb;
-  border-left: 4px solid #2e7d32;
-  border-radius: 6px;
+  padding: 10px 15px;
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  border-radius: 8px;
 }
 
-/* ========== Order Section ========== */
+/* === Order Section === */
 .order-section {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 25px;
 }
 
 .order-section label {
-  font-size: 1rem;
-  font-weight: 500;
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #444;
+  margin-bottom: 6px;
 }
 
-.order-section input {
-  width: 140px;
-  padding: 10px;
+.order-section input[type="number"],
+.order-section select {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 10px;
   border: 1px solid #cfd8dc;
   border-radius: 8px;
   outline: none;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  color: #333;
+  background-color: #fff;
+  appearance: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.order-section input:focus {
-  border-color: #2e7d32;
-  box-shadow: 0 0 4px rgba(46, 125, 50, 0.3);
+.order-section input[type="number"]:focus,
+.order-section select:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
+.order-section select {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="%234CAF50" d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 1em;
+  cursor: pointer;
+}
+
+/* === Button === */
 .order-btn {
-  padding: 12px 18px;
+  padding: 14px 25px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #43a047, #2e7d32);
-  color: white;
-  font-size: 1rem;
-  font-weight: 500;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   width: fit-content;
+  margin-top: 10px;
 }
 
 .order-btn:hover {
   background: linear-gradient(135deg, #2e7d32, #1b5e20);
   transform: translateY(-2px);
-  box-shadow: 0px 6px 12px rgba(46, 125, 50, 0.3);
+  box-shadow: 0 8px 15px rgba(46, 125, 50, 0.4);
 }
 
-/* ========== Loading State ========== */
+/* === Loading Animation === */
 .loading {
   margin-left: 240px;
   padding: 40px;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 500;
   color: #777;
   text-align: center;
+  animation: pulse 1.5s infinite ease-in-out;
 }
 
-/* ========== Animations ========== */
+/* === Animations === */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -156,7 +161,13 @@
   }
 }
 
-/* ========== Responsive ========== */
+@keyframes pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+/* === Responsive Design === */
 @media (max-width: 992px) {
   .purchase-container {
     margin-left: 0;
@@ -171,5 +182,16 @@
 
   .details-section {
     align-items: center;
+  }
+
+  .order-section input[type="number"],
+  .order-section select,
+  .order-btn {
+    max-width: none;
+    width: 100%;
+  }
+
+  .loading {
+    margin-left: 0;
   }
 }

@@ -74,7 +74,7 @@ const MyOrders = () => {
           <table className="orders-table">
             <thead>
               <tr>
-                <th> .</th>
+                <th></th>
                 <th>Product</th>
                 <th>Quantity (kg)</th>
                 <th>Total Price</th>

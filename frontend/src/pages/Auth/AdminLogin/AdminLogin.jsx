@@ -1,3 +1,4 @@
+// frontend/src/pages/Auth/AdminLogin/AdminLogin.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../../api";
@@ -23,11 +24,19 @@ function AdminLogin() {
         return;
       }
 
-      setAuth(data.token, data.user);
+      // Save token + user
+      await setAuth(data.token, data.user);
+
       alert("✅ Admin login successful");
-      navigate("/admin/dashboard");
+
+      // Ensure navigation happens after saving
+      setTimeout(() => {
+        navigate("/admin/dashboard", { replace: true });
+      }, 200);
+
     } catch (error) {
-      alert("❌ Login failed");
+      console.error(error);
+      alert("❌ Login failed: " + (error.response?.data?.message || "Server error"));
     }
   };
 

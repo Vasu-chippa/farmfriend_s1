@@ -171,9 +171,50 @@ router.delete("/orders/:id", protect, authorizeRoles("buyer"), async (req, res) 
     res.status(500).json({ error: "Failed to delete order" });
   }
 });
+// Place order
+router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
+  try {
+    const { productId, quantity, paymentMethod } = req.body; // ✅ added paymentMethod
+    const product = await Product.findById(productId);
+    if (!product || product.quantity < quantity) {
+      return res.status(400).json({ error: "Insufficient stock or product not found" });
+    }
 
+    const price = product.price;
+    const total = price * quantity;
 
+    // Generate transaction ID
+    const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
+    // ✅ create the order with payment info
+    const order = new Order({
+      buyer: req.user._id,
+      product: product._id,
+      quantity,
+      price,
+      total,
+      status: "Pending",
+      approved: false,
+      payment: {
+        method: paymentMethod || "Other",
+        status: "Paid",
+        transactionId,
+        paymentDate: new Date(),
+        amount: total,
+        notes: "Auto payment success simulation",
+      },
+    });
 
+    await order.save();
+
+    product.quantity -= quantity;
+    await product.save();
+
+    res.status(201).json(order);
+  } catch (err) {
+    console.error("Error placing order:", err);
+    res.status(500).json({ error: "Failed to place order" });
+  }
+});
 
 export default router;

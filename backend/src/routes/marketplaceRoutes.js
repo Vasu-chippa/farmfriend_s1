@@ -10,8 +10,8 @@ const router = express.Router();
  */
 router.get("/", async (req, res) => {
   try {
-    // Only show products with quantity > 0 (available)
-    const products = await Product.find({ quantity: { $gt: 0 } })
+    // Only show products that are not sold out and have available quantity
+    const products = await Product.find({ isSoldOut: false, availableQuantity: { $gt: 0 } })
       .populate("farmer", "name email")
       .sort({ createdAt: -1 });
     res.json(products);

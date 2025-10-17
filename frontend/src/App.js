@@ -2,7 +2,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-
+import { useLocation } from "react-router-dom";
 // Guards
 import RequireAuth from "./components/guards/RequireAuth";
 
@@ -10,7 +10,7 @@ import RequireAuth from "./components/guards/RequireAuth";
 import AdminLayout from "./layouts/AdminLayout";
 import BuyerLayout from "./layouts/BuyerLayout";
 import AgentLayout from "./layouts/AgentLayout";
-// Home
+
 import Home from "./pages/Home/Home";
 import NotFound from "./pages/NotFound/NotFound";
 
@@ -61,8 +61,12 @@ import ManagePayments from "./pages/Admin/Payments/ManagePayments";
 
 
 function App() {
+  const location = useLocation();
+  const hideNavbar = location.pathname.startsWith("/admin");
+
   return (
     <>
+     {!hideNavbar}
       <Navbar />
       <Routes>
         {/* Home */}
@@ -202,7 +206,7 @@ function App() {
           }
         />
 
-              {/* Agent Protected Routes */}
+
 <Route
   path="/agent/dashboard"
   element={
@@ -265,6 +269,35 @@ function App() {
   }
 />
        {/* ✅ Admin Protected Routes */}
+<Route
+  path="/admin/*"
+  element={
+    <RequireAuth allowedRoles={["admin"]} redirectTo="/admin/login">
+      <AdminLayout />
+    </RequireAuth>
+  }
+>
+  <Route path="dashboard" element={<AdminDashboard />} />
+  <Route path="users/farmers" element={<ManageFarmers />} />
+  <Route path="users/buyers" element={<ManageBuyers />} />
+  <Route path="users/agents" element={<ManageAgents />} />
+  <Route path="orders" element={<ManageOrders />} />
+  <Route path="products" element={<ManageProducts />} />
+  <Route path="payments" element={<ManagePayments />} />
+</Route>
+
+
+<Route
+  path="/agent/payments"
+  element={
+    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+      <AgentLayout>
+        <AgentPayments />
+      </AgentLayout>
+    </RequireAuth>
+  }
+/>
+{/* ✅ Admin Protected Routes */}
 <Route
   path="/admin/*"
   element={

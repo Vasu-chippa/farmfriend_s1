@@ -112,25 +112,17 @@ router.delete("/products/:id", protect, authorizeRoles("farmer"), async (req, re
    FARMER EXPENSES CRUD
 ===================================================== */
 
-// same as your current expenses code (no change)
-
-
-
-
-/* =====================================================
-   FARMER EXPENSES CRUD
-===================================================== */
-
 /**
  * @route   POST /api/farmers/expenses
  * @desc    Add a new expense (farmer only)
  */
-// Add expense
-router.post("/expenses", async (req, res) => {
+// backend/src/routes/farmerRoutes.js
+router.post("/expenses", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
     const { cropName, category, amount, date, description } = req.body;
 
     const expense = new Expense({
+      farmer: req.user._id,   // 👈 save logged-in farmer
       cropName,
       category,
       amount,
@@ -141,61 +133,87 @@ router.post("/expenses", async (req, res) => {
     await expense.save();
     res.status(201).json(expense);
   } catch (err) {
-    console.error("❌ Error adding expense:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ error: Object.values(err.errors).map(e => e.message) });
-    }
-
     res.status(500).json({ error: "Failed to add expense" });
   }
 });
 
 
-
 /**
  * @route   GET /api/farmers/expenses
- * @desc    Fetch all expenses
+ * @desc    Fetch all expenses of logged-in farmer
  */
-router.get("/expenses", async (req, res) => {
+router.get("/expenses", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
+    const expenses = await Expense.find({ farmer: req.user._id }).sort({ date: -1 }); // 👈 only this farmer
     res.json(expenses);
   } catch (err) {
-    console.error("❌ Error fetching expenses:", err);
     res.status(500).json({ error: "Failed to fetch expenses" });
   }
 });
 
 /**
  * @route   PUT /api/farmers/expenses/:id
- * @desc    Update expense
  */
-router.put("/expenses/:id", async (req, res) => {
+router.put("/expenses/:id", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
-    const updated = await Expense.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updated = await Expense.findOneAndUpdate(
+      { _id: req.params.id, farmer: req.user._id }, // 👈 only update own expenses
+      req.body,
+      { new: true }
+    );
     if (!updated) return res.status(404).json({ error: "Expense not found" });
     res.json(updated);
   } catch (err) {
-    console.error("❌ Error updating expense:", err);
     res.status(500).json({ error: "Failed to update expense" });
   }
 });
 
+
 /**
  * @route   DELETE /api/farmers/expenses/:id
- * @desc    Delete expense
  */
-router.delete("/expenses/:id", async (req, res) => {
+router.delete("/expenses/:id", protect, authorizeRoles("farmer"), async (req, res) => {
   try {
-    const deleted = await Expense.findByIdAndDelete(req.params.id);
+    const deleted = await Expense.findOneAndDelete({ _id: req.params.id, farmer: req.user._id }); // 👈 only own
     if (!deleted) return res.status(404).json({ error: "Expense not found" });
-    res.json({ message: "🗑️ Expense deleted successfully" });
+    res.json({ message: "Expense deleted successfully" });
   } catch (err) {
-    console.error("❌ Error deleting expense:", err);
     res.status(500).json({ error: "Failed to delete expense" });
   }
 });
+
+/**
+ * @route   GET /api/farmers/stats
+ * @desc    Get dashboard stats for logged-in farmer
+ */
+router.get("/stats", protect, authorizeRoles("farmer"), async (req, res) => {
+  try {
+    const farmerId = req.user._id;
+    // Total Crops created by farmer
+    const totalCrops = await Product.countDocuments({ farmer: farmerId });
+    // Harvest crops count
+    const harvest = await Harvest.findOne({ farmer: farmerId });
+    const totalHarvest = harvest ? harvest.crops.length : 0;
+    // Farmer’s expenses
+    const expenses = await Expense.find({ farmer: farmerId });
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    // Total Income from harvest
+    const totalIncome = harvest
+      ? harvest.crops.reduce((sum, c) => sum + (c.price || 0) * (c.quantity || 0), 0)
+      : 0;
+    // Profit or Loss
+    const profitOrLoss = totalIncome - totalExpenses;
+    res.json({
+      totalCrops,
+      totalHarvest,
+      totalExpenses,
+      totalIncome,
+      profitOrLoss,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
+
 export default router;

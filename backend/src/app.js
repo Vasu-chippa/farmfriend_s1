@@ -3,13 +3,14 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import farmerRoutes from "./routes/farmerRoutes.js";
 import buyerRoutes from "./routes/buyerRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import marketplaceRoutes from "./routes/marketplaceRoutes.js";
-import productRoutes from "./src/routes/productRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

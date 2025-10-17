@@ -1,4 +1,6 @@
+// apps/frontend/src/pages/Auth/AgentLogin/AgentLogin.jsx
 import React, { useState } from "react";
+
 import API from "../../../api";
 import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
@@ -6,6 +8,8 @@ import wave from "../wave.png";
 import bg from "../bg.svg";
 import avatar from "../avatar.svg";
 import "../Auth.css";
+
+
 function AgentLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,14 +18,26 @@ function AgentLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // call backend route (API uses baseURL from .env)
       const res = await API.post("/agents/login", { email, password });
+
+      // Expect backend response: { message, user, token } or { token, user }
       const { token, user } = res.data;
+
+      if (!token || !user) {
+        console.error("Agent login response missing token/user:", res.data);
+        return alert("Login failed: invalid response from server");
+      }
+
+      // Save to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      alert("✅ Agent login successful");
+
+      // navigate to agent dashboard
       navigate("/agent/dashboard");
     } catch (err) {
-      alert("❌ Login failed");
+      console.error("Agent Login Error:", err.response?.data || err.message);
+      alert("Login failed: " + (err.response?.data?.message || err.message));
     }
   };
   return (

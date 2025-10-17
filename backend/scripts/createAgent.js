@@ -11,8 +11,13 @@ const createAgent = async () => {
 
     const agent = new Agent({
   fullName: "Agent Two",
+<<<<<<< HEAD
   email: "agenttwo2@gmail.com",  // 👈 new email
   password: "agenttwo2",
+=======
+  email: "agenttwo@gmail.com",  // 👈 new email
+  password: "agenttwo",
+>>>>>>> 4480506761132cab8ea8e9e83e5a14ad937448ed
   phone: "90000001",
   region: "Hyderabad"
 });
