@@ -26,7 +26,7 @@ const OrderConfirmation = () => {
       }
     };
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, location.state]);
 
   if (!order) return <div className="oc-loading">Loading confirmation…</div>;
 

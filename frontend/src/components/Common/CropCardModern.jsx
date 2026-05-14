@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FiClock, FiDollarSign, FiPlus } from 'react-icons/fi';
@@ -28,7 +28,7 @@ const CropCardModern = ({ crop }) => {
   const [adding, setAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
-  const checkAdded = () => {
+  const checkAdded = useCallback(() => {
     try {
       const raw = localStorage.getItem('harvestList');
       const list = raw ? JSON.parse(raw) : [];
@@ -36,7 +36,7 @@ const CropCardModern = ({ crop }) => {
     } catch (e) {
       return false;
     }
-  };
+  }, [crop]);
 
   const handleCardClick = () => {
     const id = crop._id || crop.id;

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../../../api";
 import OrderTimeline from "../../../components/Order/OrderTimeline";
-import Button from "../../../components/ui/Button";
 import { FiHash, FiCreditCard, FiPackage } from 'react-icons/fi';
 import "./MyOrders.css";
 

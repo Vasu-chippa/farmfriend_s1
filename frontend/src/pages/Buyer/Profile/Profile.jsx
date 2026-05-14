@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import API from "../../../api";
-import Button from "../../../components/ui/Button";
 import "./Profile.css";
 
 const Profile = () => {

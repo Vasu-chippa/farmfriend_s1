@@ -12,7 +12,7 @@ import {
   Legend,
   CartesianGrid,
 } from 'recharts';
-import { motion, useMotionValue, useSpring, useTransform, useMotionValueEvent } from 'framer-motion';
+import { motion } from 'framer-motion';
 import InfoCard from '../../../components/Common/InfoCard';
 import StatBox from '../../../components/Common/StatBox';
 
@@ -27,7 +27,6 @@ const FarmerCropDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const token = localStorage.getItem('token');
 
   const [crop, setCrop] = useState(null);
   const [loading, setLoading] = useState(true);

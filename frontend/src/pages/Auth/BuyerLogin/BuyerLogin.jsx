@@ -19,8 +19,8 @@ function BuyerLogin() {
       const res = await API.post("/buyers/login", { email, password });
 
       const { token, user } = res.data;
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
       
       toast.success("Login successful");
       setTimeout(() => navigate("/buyer/dashboard"), 1000);
