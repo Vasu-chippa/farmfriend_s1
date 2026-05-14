@@ -38,9 +38,21 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS: allow only the client origin and allow credentials (cookies)
+// Support multiple allowed origins and reflect the request origin when allowed.
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "https://farm-friends.netlify.app",
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow non-browser requests (e.g., curl, server-to-server) with no origin
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, origin);
+      return callback(new Error("CORS origin not allowed"), false);
+    },
     credentials: true,
   })
 );
@@ -61,6 +73,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/agents", agentRoutes);
 app.use("/api/auth", authRoutes);
+// Backwards-compatible route used by some builds (keeps older frontend working)
+app.use("/auth", authRoutes);
 app.use("/api/buyers", buyerRoutes);
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/crops", cropRoutes);
