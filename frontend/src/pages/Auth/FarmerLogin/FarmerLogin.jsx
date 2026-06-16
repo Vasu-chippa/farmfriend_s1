@@ -17,7 +17,20 @@ function FarmerLogin() {
     e.preventDefault();
     try {
       const res = await API.post("/auth/login", { email, password });
-      const { user } = res.data;
+      // Prefer server-provided user, but verify session by fetching /auth/me
+      let user = res.data?.user;
+      try {
+        const me = await API.get("/auth/me");
+        if (me?.data?.user) user = me.data.user;
+      } catch (e) {
+        // If /auth/me fails, fall back to response user if present
+      }
+
+      if (!user) {
+        toast.error("Login did not return a valid user session");
+        return;
+      }
+
       // populate client cache for compatibility helpers
       try { await import("../../../utils/auth").then(mod => mod.setAuth(user)); } catch (e) {}
       toast.success(`Welcome back, ${user.fullName}!`);
