@@ -5,7 +5,7 @@ import axios from "axios";
 // '/api' for development (frontend proxy). This prevents hardcoding the
 // production Render URL which causes local development to hit the remote
 // server and can lead to "server error" when developing locally.
-const API_BASE = process.env.REACT_APP_API_BASE_URL || "/api";
+const API_BASE = process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "/api";
 const api = axios.create({
   baseURL: `${API_BASE}/auth`,
   withCredentials: true,
