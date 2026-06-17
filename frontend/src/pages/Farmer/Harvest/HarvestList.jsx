@@ -17,8 +17,7 @@ const HarvestList = () => {
   useEffect(() => {
     const fetchHarvest = async () => {
       try {
-        const token = localStorage.getItem("token");
-        let list = [];
+      let list = [];
         try {
           const res = await API.get("/harvest", {
             headers: getAuthHeaders(),
