@@ -42,9 +42,12 @@ app.use(cookieParser());
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://farm-friends.netlify.app",
-  // Allow other farmfriend Netlify subdomains (e.g. farmfriend-s.netlify.app)
+  // Allow the Netlify frontend hostname used in this project
   "https://farmfriend-s.netlify.app",
+  // Local dev hosts
   "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5173",
 ].filter(Boolean);
 
 app.use(
@@ -52,10 +55,12 @@ app.use(
     origin: (origin, callback) => {
       // Allow non-browser requests (e.g., curl, server-to-server) with no origin
       if (!origin) return callback(null, true);
-        // Allow any Netlify subdomain for this project
-        if (typeof origin === 'string' && origin.endsWith('.netlify.app')) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        return callback(new Error("CORS origin not allowed"), false);
+      // Allow any Netlify subdomain for this project
+      if (typeof origin === 'string' && origin.endsWith('.netlify.app')) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Do not throw; deny by returning false so middleware doesn't set CORS headers
+      console.warn("CORS origin rejected:", origin);
+      return callback(null, false);
     },
     credentials: true,
   })
@@ -67,7 +72,9 @@ app.use(
       if (!origin) return callback(null, true);
       if (typeof origin === 'string' && origin.endsWith('.netlify.app')) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("CORS origin not allowed"), false);
+      // Do not throw; deny by returning false so middleware doesn't set CORS headers
+      console.warn("CORS preflight rejected origin:", origin);
+      return callback(null, false);
     },
     credentials: true,
   }));
