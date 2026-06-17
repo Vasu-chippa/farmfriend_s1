@@ -4,6 +4,7 @@ import API from "../../../api";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom';
 import "./FarmerMarketplace.css";
+import { getAuthHeaders } from "../../../utils/auth";
 
 function FarmerMarketplace() {
   const [products, setProducts] = useState([]);
@@ -41,9 +42,8 @@ function FarmerMarketplace() {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem("token");
       const res = await API.get("/farmers/products", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: getAuthHeaders(),
       });
       setProducts(res.data);
     } catch (err) {

@@ -2,13 +2,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import API from '../../../api';
+import { getAuthHeaders } from '../../../utils/auth';
 import { motion } from 'framer-motion';
 import CropCardModern from '../../../components/Common/CropCardModern';
 import './FarmerCropsModern.css';
 
 const FarmerCrops = () => {
   const [crops, setCrops] = useState([]);
-  const token = localStorage.getItem('token');
+  // don't rely on token being stored client-side; prefer cookie-based auth
+  // use getAuthHeaders() to avoid sending 'Bearer null'
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -16,7 +18,7 @@ const FarmerCrops = () => {
   const fetchCrops = useCallback(async (force = false) => {
     if (fetchedRef.current && !force) return crops;
     try {
-      const res = await API.get('/crops', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await API.get('/crops', { headers: getAuthHeaders() });
       const data = res.data || [];
       console.debug('[FarmerCrops] fetched', data.length, 'crops');
       if (!data.length) {

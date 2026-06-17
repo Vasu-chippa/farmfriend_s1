@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../../../api";
+import { getAuthHeaders } from "../../../utils/auth";
 import { getRecords } from "../../../services/cropRecordService";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Harvest.css";
@@ -20,7 +21,7 @@ const HarvestList = () => {
         let list = [];
         try {
           const res = await API.get("/harvest", {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: getAuthHeaders(),
           });
           list = res.data.crops || [];
         } catch (err) {
@@ -83,10 +84,8 @@ const HarvestList = () => {
   const handleRemove = async (cropId) => {
     try {
       setRemoving(cropId);
-      const token = localStorage.getItem("token");
-
       await API.delete(`/harvest/${cropId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: getAuthHeaders(),
       });
 
       setCrops((prev) => prev.filter((c) => c && c.cropId && c.cropId._id !== cropId));

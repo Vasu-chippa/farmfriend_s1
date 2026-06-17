@@ -47,6 +47,14 @@ export const isAuthenticated = () => !!cachedUser;
 
 export const getRole = () => cachedUser?.role || null;
 
+// Return Authorization header only when a token is present in localStorage.
+// This avoids sending `Authorization: Bearer null` which causes 401 errors
+// when the server expects either a cookie or a valid token.
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const auth = {
   fetchCurrentUser,
   logout,

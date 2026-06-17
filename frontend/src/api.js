@@ -5,5 +5,25 @@ const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "/api",
   withCredentials: true, // send cookies for auth
 });
+
+// Sanitize Authorization header and attach token from localStorage only when present.
+API.interceptors.request.use((config) => {
+  try {
+    const hdr = config.headers && (config.headers.Authorization || config.headers.authorization);
+    // Remove invalid bearer values like 'Bearer null' or 'Bearer undefined' which cause 401s
+    if (hdr && /Bearer\s+(null|undefined|\s*)$/i.test(hdr)) {
+      if (config.headers.Authorization) delete config.headers.Authorization;
+      if (config.headers.authorization) delete config.headers.authorization;
+    }
+    const token = localStorage.getItem("token");
+    if (token && !(config.headers && (config.headers.Authorization || config.headers.authorization))) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // ignore
+  }
+  return config;
+});
 export default API;
 
