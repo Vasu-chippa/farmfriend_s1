@@ -36,6 +36,7 @@ export const registerUser = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -76,6 +77,7 @@ export const loginUser = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -116,6 +118,6 @@ export const getCurrentUser = async (req, res) => {
 // @route POST /api/auth/logout
 // @access Public
 export const logoutUser = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", { path: "/" });
   return res.json({ message: "Logged out" });
 };

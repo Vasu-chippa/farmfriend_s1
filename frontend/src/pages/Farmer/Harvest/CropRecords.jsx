@@ -42,11 +42,11 @@ const CropRecords = () => {
   const fetchCrop = useCallback(async () => {
     if (!cropId || cropId === 'new') return;
     try {
-      const res = await API.get(`/crops/${cropId}`, authCfg());
+      const res = await API.get(`/crops/${cropId}`);
       setCrop(res.data); setCropAcres(res.data.acres || 0);
     } catch {
       try {
-        const res2 = await API.get(`/harvest/${cropId}`, authCfg());
+        const res2 = await API.get(`/harvest/${cropId}`);
         setCrop(res2.data); setCropAcres(res2.data.acres || 0);
       } catch (e2) { logger.error("Fetch crop:", e2); setCrop(null); }
     }
@@ -121,8 +121,11 @@ const CropRecords = () => {
     catch (e) { logger.error("Delete:", e); }
   };
 
+  const apiBase = process.env.REACT_APP_API_URL
+    ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/, "")
+    : process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
   const cropImgSrc = crop?.image
-    ? `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}${crop.image}`
+    ? `${apiBase}${crop.image}`
     : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
 
   return (

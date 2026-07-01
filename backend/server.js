@@ -125,9 +125,20 @@ const corsOptionsDelegate = (origin, callback) => {
   return callback(null, false);
 };
 
-app.use(cors({ origin: corsOptionsDelegate, credentials: true }));
+app.use(cors({
+  origin: corsOptionsDelegate,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  exposedHeaders: ["Set-Cookie"],
+}));
 // Ensure preflight (OPTIONS) requests are handled with the same policy
-app.options('*', cors({ origin: corsOptionsDelegate, credentials: true }));
+app.options('*', cors({
+  origin: corsOptionsDelegate,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+}));
 app.use(morgan("dev"));
 
 // Static folder for uploaded images
