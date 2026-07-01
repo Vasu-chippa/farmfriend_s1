@@ -72,6 +72,7 @@ const parseCommaSeparatedOrigins = (value) =>
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  "https://farmfriend-s.netlify.app",
   ...parseCommaSeparatedOrigins(process.env.ALLOWED_ORIGINS),
   ...parseCommaSeparatedOrigins(process.env.CORS_ALLOWED_ORIGINS),
   // Local dev hosts
