@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 import { AnimatePresence } from 'framer-motion';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 // Guards
 import RequireAuth from "./components/guards/RequireAuth";
 
@@ -48,14 +49,12 @@ import Profile from "./pages/Buyer/Profile/Profile";
 import OrderConfirmation from "./pages/Buyer/Orders/OrderConfirmation";
 
 // Agent Section
-// Agent Section
 import AgentDashboard from "./pages/Agent/Dashboard/AgentDashboard";
 import AgentFarmers from "./pages/Agent/Farmers/FarmersPage";
 import AgentOrders from "./pages/Agent/Orders/AgentOrders";
 import AgentProfile from "./pages/Agent/Profile/AgentProfile";
-import AgentMarketplace from  "./pages/Agent/Marketplace/AgentMarketplace"
+import AgentMarketplace from  "./pages/Agent/Marketplace/AgentMarketplace";
 import AgentPayments from "./pages/Agent/Orders/AgentPayments";
-
 
 // Admin Section
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
@@ -67,7 +66,6 @@ import ManageProducts from "./pages/Admin/Products/ManageProducts";
 import ManagePayments from "./pages/Admin/Payments/ManagePayments";
 import Reports from "./pages/Admin/Reports/Reports";
 
-
 function App() {
   const location = useLocation();
   // Show navbar only on Home (/) and any login routes (ending with /login)
@@ -78,280 +76,277 @@ function App() {
       {showNavbar && <Navbar />}
       <ToastContainer position="top-right" autoClose={3000} />
       <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Home */}
-        <Route path="/" element={<Home />} />
+        <Routes location={location} key={location.pathname}>
+          {/* Home */}
+          <Route path="/" element={<Home />} />
 
-        {/* Auth */}
-        <Route path="/farmer/login" element={<FarmerLogin />} />
-        <Route path="/farmer/register" element={<FarmerRegister />} />
-        <Route path="/buyer/login" element={<BuyerLogin />} />
-        <Route path="/buyer/register" element={<BuyerRegister />} />
-        <Route path="/agent/login" element={<AgentLogin />} />
-        <Route path="/agent/register" element={<AgentRegister />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+          {/* Auth */}
+          <Route path="/farmer/login" element={<FarmerLogin />} />
+          <Route path="/farmer/register" element={<FarmerRegister />} />
+          <Route path="/buyer/login" element={<BuyerLogin />} />
+          <Route path="/buyer/register" element={<BuyerRegister />} />
+          <Route path="/agent/login" element={<AgentLogin />} />
+          <Route path="/agent/register" element={<AgentRegister />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Farmer Protected Routes (wrapped with FarmerLayout to include Sidebar) */}
-        <Route
-          path="/farmer/dashboard"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <FarmerDashboard />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/crops"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <FarmerCrops />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/harvest"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <HarvestList />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/harvest/:cropId"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <CropRecords />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-       <Route
-  path="/farmer/crops/:id"
-  element={
-    <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-      <FarmerLayout>
-        <FarmerCropDetails />
-      </FarmerLayout>
-    </RequireAuth>
-  }
-/>
-         <Route
-          path="/farmer/marketplace/:id"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <CropDetails />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/expenses"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <ExpenseTracker />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/marketplace"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <FarmerMarketplace />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-       
-        <Route
-          path="/farmer/profile"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <FarmerProfile />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/profile/edit"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <FarmerProfileEdit />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/farmer/crop-records/:cropId"
-          element={
-            <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
-              <FarmerLayout>
-                <CropRecords />
-              </FarmerLayout>
-            </RequireAuth>
-          }
-        />
+          {/* Farmer Protected Routes */}
+          <Route
+            path="/farmer/dashboard"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <FarmerDashboard />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/crops"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <FarmerCrops />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/harvest"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <HarvestList />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/harvest/:cropId"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <CropRecords />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/crops/:id"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <FarmerCropDetails />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/marketplace/:id"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <CropDetails />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/expenses"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <ExpenseTracker />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/marketplace"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <FarmerMarketplace />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/profile"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <FarmerProfile />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/profile/edit"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <FarmerProfileEdit />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/farmer/crop-records/:cropId"
+            element={
+              <RequireAuth allowedRoles={["farmer"]} redirectTo="/farmer/login">
+                <FarmerLayout>
+                  <CropRecords />
+                </FarmerLayout>
+              </RequireAuth>
+            }
+          />
 
-        {/* Buyer Protected Routes */}
-        <Route
-          path="/buyer/dashboard"
-          element={
-            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
-              <BuyerLayout>
-                <BuyerDashboard />
-              </BuyerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/buyer/marketplace"
-          element={
-            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
-              <BuyerLayout>
-                <Marketplace />
-              </BuyerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/buyer/marketplace/:id"
-          element={
-            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
-              <BuyerLayout>
-                <CropPurchase />
-              </BuyerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/buyer/orders"
-          element={
-            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
-              <BuyerLayout>
-                <MyOrders />
-              </BuyerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/buyer/orders/confirmation/:orderId"
-          element={
-            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
-              <BuyerLayout>
-                <OrderConfirmation />
-              </BuyerLayout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/buyer/profile"
-          element={
-            <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
-              <BuyerLayout>
-                <Profile />
-              </BuyerLayout>
-            </RequireAuth>
-          }
-        />
+          {/* Buyer Protected Routes */}
+          <Route
+            path="/buyer/dashboard"
+            element={
+              <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+                <BuyerLayout>
+                  <BuyerDashboard />
+                </BuyerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/buyer/marketplace"
+            element={
+              <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+                <BuyerLayout>
+                  <Marketplace />
+                </BuyerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/buyer/marketplace/:id"
+            element={
+              <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+                <BuyerLayout>
+                  <CropPurchase />
+                </BuyerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/buyer/orders"
+            element={
+              <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+                <BuyerLayout>
+                  <MyOrders />
+                </BuyerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/buyer/orders/confirmation/:orderId"
+            element={
+              <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+                <BuyerLayout>
+                  <OrderConfirmation />
+                </BuyerLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/buyer/profile"
+            element={
+              <RequireAuth allowedRoles={["buyer"]} redirectTo="/buyer/login">
+                <BuyerLayout>
+                  <Profile />
+                </BuyerLayout>
+              </RequireAuth>
+            }
+          />
 
+          {/* Agent Protected Routes */}
+          <Route
+            path="/agent/dashboard"
+            element={
+              <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+                <AgentLayout>
+                  <AgentDashboard />
+                </AgentLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/agent/farmers"
+            element={
+              <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+                <AgentLayout>
+                  <AgentFarmers />
+                </AgentLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/agent/marketplace"
+            element={
+              <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+                <AgentLayout>
+                  <AgentMarketplace />
+                </AgentLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/agent/orders"
+            element={
+              <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+                <AgentLayout>
+                  <AgentOrders />
+                </AgentLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/agent/profile"
+            element={
+              <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+                <AgentLayout>
+                  <AgentProfile />
+                </AgentLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/agent/payments"
+            element={
+              <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
+                <AgentLayout>
+                  <AgentPayments />
+                </AgentLayout>
+              </RequireAuth>
+            }
+          />
 
-<Route
-  path="/agent/dashboard"
-  element={
-    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
-      <AgentLayout>
-        <AgentDashboard />
-      </AgentLayout>
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/agent/farmers"
-  element={
-    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
-      <AgentLayout>
-        <AgentFarmers />
-      </AgentLayout>
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/agent/marketplace"
-  element={
-    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
-      <AgentLayout>
-        <AgentMarketplace />
-      </AgentLayout>
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/agent/orders"
-  element={
-    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
-      <AgentLayout>
-        <AgentOrders />
-      </AgentLayout>
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/agent/profile"
-  element={
-    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
-      <AgentLayout>
-        <AgentProfile />
-      </AgentLayout>
-    </RequireAuth>
-  }
-/>
+          {/* Admin Protected Routes */}
+          <Route
+            path="/admin/*"
+            element={
+              <RequireAuth allowedRoles={["admin"]} redirectTo="/admin/login">
+                <AdminLayout />
+              </RequireAuth>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users/farmers" element={<ManageFarmers />} />
+            <Route path="users/buyers" element={<ManageBuyers />} />
+            <Route path="users/agents" element={<ManageAgents />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="orders" element={<ManageOrders />} />
+            <Route path="products" element={<ManageProducts />} />
+            <Route path="payments" element={<ManagePayments />} />
+          </Route>
 
-<Route
-  path="/agent/payments"
-  element={
-    <RequireAuth allowedRoles={["agent"]} redirectTo="/agent/login">
-      <AgentLayout>
-        <AgentPayments />
-      </AgentLayout>
-    </RequireAuth>
-  }
-/>
-       {/* ✅ Admin Protected Routes */}
-<Route
-  path="/admin/*"
-  element={
-    <RequireAuth allowedRoles={["admin"]} redirectTo="/admin/login">
-      <AdminLayout />
-    </RequireAuth>
-  }
->
-  <Route path="dashboard" element={<AdminDashboard />} />
-  <Route path="users/farmers" element={<ManageFarmers />} />
-  <Route path="users/buyers" element={<ManageBuyers />} />
-  <Route path="users/agents" element={<ManageAgents />} />
-  <Route path="reports" element={<Reports />} />
-  <Route path="orders" element={<ManageOrders />} />
-  <Route path="products" element={<ManageProducts />} />
-  <Route path="payments" element={<ManagePayments />} />
-</Route>
-
-
-
-        {/* Not Found */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </AnimatePresence>
     </>
   );

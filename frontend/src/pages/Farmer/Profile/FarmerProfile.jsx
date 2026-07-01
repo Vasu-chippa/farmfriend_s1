@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API from '../../../api';
 import './FarmerProfile.css';
 
 export default function FarmerProfile() {
@@ -8,16 +9,24 @@ export default function FarmerProfile() {
 
 	useEffect(() => {
 		const raw = localStorage.getItem('user');
-		if (!raw) {
-			navigate('/farmer/login');
-			return;
+		if (raw) {
+			try { setUser(JSON.parse(raw)); return; }
+			catch (e) { console.error('Failed to parse user from storage', e); }
 		}
-		try {
-			setUser(JSON.parse(raw));
-		} catch (e) {
-			console.error('Failed to parse user from storage', e);
+		// Try fetching current user from server (cookie-based auth)
+		(async () => {
+			try {
+				const res = await API.get('/auth/me');
+				if (res && res.data && res.data.user) {
+					setUser(res.data.user);
+					try { localStorage.setItem('user', JSON.stringify(res.data.user)); } catch (e) {}
+					return;
+				}
+			} catch (err) {
+				// fallthrough to redirect
+			}
 			navigate('/farmer/login');
-		}
+		})();
 	}, [navigate]);
 
 	if (!user) return null;

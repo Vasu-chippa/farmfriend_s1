@@ -36,6 +36,12 @@ const orderSchema = new mongoose.Schema(
     price: { type: Number, required: true }, // price per unit at order time
     total: { type: Number, required: true },
 
+    // Commission breakdown (optional)
+    commissionPercent: { type: Number, default: 5 },
+    commissionAmount: { type: Number, default: 0 },
+    farmerAmount: { type: Number, default: 0 },
+    platformAmount: { type: Number, default: 0 },
+
     // --- Updated fields ---
     status: {
       type: String,
@@ -53,6 +59,10 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // Region snapshot and canonical reference
+    regionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
+    regionSnapshot: { type: Object },
 
     // Payment subdocument
     payment: paymentSchema,

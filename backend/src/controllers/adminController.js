@@ -1,30 +1,73 @@
 import User from "../models/User.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import Transaction from "../models/Transaction.js";
+import PlatformWallet from "../models/PlatformWallet.js";
+import Region from "../models/Region.js";
+import Wallet from "../models/Wallet.js";
 import bcrypt from "bcryptjs";
 
 // 📊 Dashboard Summary
 export const getDashboardData = async (req, res) => {
   try {
-    const [users, farmers, buyers, agents, orders, products, totalPayments] =
-      await Promise.all([
-        User.countDocuments(),
-        User.countDocuments({ role: "farmer" }),
-        User.countDocuments({ role: "buyer" }),
-        User.countDocuments({ role: "agent" }),
-        Order.countDocuments(),
-        Product.countDocuments(),
-        Order.countDocuments({ "payment.status": "Paid" }),
-      ]);
+    // Basic user/product/order counts
+    const [users, farmers, buyers, agents, ordersCount, productsCount] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ role: "farmer" }),
+      User.countDocuments({ role: "buyer" }),
+      User.countDocuments({ role: "agent" }),
+      Order.countDocuments(),
+      Product.countDocuments(),
+    ]);
+
+    // Revenue and commission from Transaction collection
+    const revenueAgg = await Transaction.aggregate([
+      { $match: { status: 'Completed' } },
+      { $group: { _id: null, totalRevenue: { $sum: '$grossAmount' }, totalCommission: { $sum: '$commissionAmount' } } },
+    ]);
+    const revenueData = revenueAgg[0] || { totalRevenue: 0, totalCommission: 0 };
+
+    // Top regions by sales
+    const topRegionsAgg = await Transaction.aggregate([
+      { $match: { status: 'Completed', 'regionSnapshot.name': { $exists: true } } },
+      { $group: { _id: '$regionSnapshot.name', sold: { $sum: '$grossAmount' }, count: { $sum: 1 } } },
+      { $sort: { sold: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Top crops by sales (join via Order.product -> Product.name)
+    const topCropsAgg = await Order.aggregate([
+      { $match: { status: 'Completed' } },
+      { $group: { _id: '$product', soldAmount: { $sum: '$total' }, count: { $sum: 1 } } },
+      { $sort: { soldAmount: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Platform wallet summary
+    const platformWallet = (await PlatformWallet.findOne()) || null;
+
+    // Wallet stats
+    const walletsSummary = await Wallet.aggregate([
+      { $group: { _id: null, totalCurrent: { $sum: '$currentBalance' }, totalPending: { $sum: '$pendingBalance' }, totalWithdrawn: { $sum: '$withdrawn' } } }
+    ]);
+
+    // Recent transactions
+    const recentTransactions = await Transaction.find().sort({ transactionDate: -1 }).limit(20).populate('orderId buyerId farmerId');
 
     res.json({
       users,
       farmers,
       buyers,
       agents,
-      orders,
-      products,
-      payments: totalPayments,
+      orders: ordersCount,
+      products: productsCount,
+      revenue: revenueData.totalRevenue,
+      commission: revenueData.totalCommission,
+      topRegions: topRegionsAgg,
+      topCrops: topCropsAgg,
+      platformWallet,
+      walletsSummary: walletsSummary[0] || {},
+      recentTransactions,
     });
   } catch (err) {
     res.status(500).json({ message: "Error loading dashboard", error: err.message });

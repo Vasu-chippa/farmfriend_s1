@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const reviewSchema = new mongoose.Schema(
-  {
-    buyer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    farmer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    rating: { type: Number, min: 1, max: 5, required: true },
-    comment: { type: String },
-    verifiedPurchase: { type: Boolean, default: false },
-  },
-  { timestamps: true }
-);
+const reviewSchema = new mongoose.Schema({
+  reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  reviewee: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+  rating: { type: Number, min: 1, max: 5, required: true },
+  comment: { type: String },
+  images: { type: [String], default: [] },
+  meta: { type: Object }
+}, { timestamps: true });
 
-export default mongoose.model("Review", reviewSchema);
+reviewSchema.index({ reviewee: 1 });
+
+export default mongoose.model('Review', reviewSchema);

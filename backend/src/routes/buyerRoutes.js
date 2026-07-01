@@ -159,7 +159,8 @@ router.delete("/orders/:id", protect, authorizeRoles("buyer"), async (req, res) 
 router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
   try {
     const { productId, quantity, paymentMethod } = req.body; // ✅ added paymentMethod
-    const product = await Product.findById(productId);
+    // populate farmer so we can inherit region information
+    const product = await Product.findById(productId).populate('farmer');
     if (!product || product.quantity < quantity) {
       return res.status(400).json({ error: "Insufficient stock or product not found" });
     }
@@ -171,7 +172,7 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
     const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
     // ✅ create the order with payment info
-    const order = new Order({
+    const orderPayload = {
       buyer: req.user._id,
       product: product._id,
       quantity,
@@ -187,7 +188,20 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
         amount: total,
         notes: "Auto payment success simulation",
       },
-    });
+    };
+
+    // Inherit region information from product.farmer if available
+    try {
+      const farmer = product.farmer;
+      if (farmer && farmer.regionId) {
+        orderPayload.regionId = farmer.regionId;
+        orderPayload.regionSnapshot = { name: farmer.region || undefined, id: farmer.regionId };
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    const order = new Order(orderPayload);
 
     await order.save();
 

@@ -30,7 +30,9 @@ export const getCropById = async (req, res) => {
 // POST create new crop
 export const createCrop = async (req, res) => {
   try {
-    const crop = new Crop({ ...req.body, farmer: req.user.id });
+    // ensure we use normalized user id set by protect middleware
+    const farmerId = req.user && (req.user._id || req.user.id);
+    const crop = new Crop({ ...req.body, farmer: farmerId });
     await crop.save();
     res.status(201).json(crop);
   } catch (err) {

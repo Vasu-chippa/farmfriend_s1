@@ -1,10 +1,38 @@
 // apps/backend/controllers/orderController.js
 import Order from "../models/Order.js";
+import Region from "../models/Region.js";
+import MarketplaceListing from "../models/MarketplaceListing.js";
 
 // Create new order
 export const createOrder = async (req, res) => {
   try {
-    const order = new Order(req.body);
+    // compute totals and commission breakdown if not provided
+    const payload = { ...req.body };
+    if (!payload.total) {
+      payload.total = Number(payload.price || 0) * Number(payload.quantity || 0);
+    }
+    const cp = Number(payload.commissionPercent !== undefined ? payload.commissionPercent : 5);
+    const commissionAmount = payload.total * (cp / 100);
+    payload.commissionPercent = cp;
+    payload.commissionAmount = commissionAmount;
+    payload.platformAmount = commissionAmount;
+    payload.farmerAmount = payload.total - commissionAmount;
+
+    // attach region snapshot if regionId provided
+    if (payload.regionId) {
+      const region = await Region.findById(payload.regionId).lean();
+      if (region) payload.regionSnapshot = { name: region.name, slug: region.slug, id: region._id };
+    } else if (payload.regionSnapshot) {
+      // ok
+    } else if (payload.listingId) {
+      const listing = await MarketplaceListing.findById(payload.listingId).populate('regionId');
+      if (listing) {
+        payload.regionId = listing.regionId?._id;
+        payload.regionSnapshot = listing.regionId ? { name: listing.regionId.name, slug: listing.regionId.slug } : {};
+      }
+    }
+
+    const order = new Order(payload);
     await order.save();
     res.status(201).json(order);
   } catch (error) {

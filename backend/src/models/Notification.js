@@ -1,14 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const notificationSchema = new mongoose.Schema(
-  {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    title: { type: String, required: true },
-    message: { type: String, required: true },
-    data: { type: mongoose.Schema.Types.Mixed },
-    read: { type: Boolean, default: false },
-  },
-  { timestamps: true }
-);
+const notificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  type: { type: String },
+  title: { type: String },
+  body: { type: String },
+  read: { type: Boolean, default: false },
+  channel: { type: String, enum: ['socket','database','email'], default: 'database' },
+  meta: { type: Object }
+}, { timestamps: true });
 
-export default mongoose.model("Notification", notificationSchema);
+notificationSchema.index({ userId: 1, read: 1 });
+
+export default mongoose.model('Notification', notificationSchema);

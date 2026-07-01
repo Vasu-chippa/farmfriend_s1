@@ -12,34 +12,33 @@ const userSchema = new mongoose.Schema(
       default: "farmer",
     },
     verified: { type: Boolean, default: false },
+    // Profile fields
     phone: { type: String },
-    
-    // Farmer specific fields
-    landSize: { type: String },
-    age: { type: Number },
-    address: { type: String },
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number], // [lng, lat]
-        default: [0, 0],
-      },
-    },
-
-    // Buyer specific fields
-    company: { type: String },
-
-    // Agent specific fields
+    district: { type: String },
     region: { type: String },
+    state: { type: String },
+    village: { type: String },
+    pincode: { type: String },
+    latitude: { type: Number },
+    longitude: { type: Number },
+    address: { type: String },
+    profileImage: { type: String },
+    experience: { type: String },
+    farmSize: { type: String },
+    preferredCrops: { type: [String], default: [] },
+    verificationStatus: { type: String, default: 'pending' },
+    regionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
+    // Farmer specific
+    age: { type: Number },
+    // Buyer specific
+    company: { type: String },
+    // Agent specific
+    assignedRegion: { type: String },
     commissionEarned: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-userSchema.index({ location: "2dsphere" });
+// Note: geographic coordinates are stored as `latitude` and `longitude` fields.
 
 export default mongoose.model("User", userSchema);

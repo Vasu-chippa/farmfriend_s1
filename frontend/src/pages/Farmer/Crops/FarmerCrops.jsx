@@ -1,5 +1,5 @@
 // apps/frontend/src/pages/Farmer/Crops/FarmerCrops.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import API from '../../../api';
 import { getAuthHeaders } from '../../../utils/auth';
@@ -15,7 +15,7 @@ const FarmerCrops = () => {
   const location = useLocation();
 
   const fetchedRef = useRef(false);
-  const fetchCrops = async (force = false) => {
+  const fetchCrops = useCallback(async (force = false) => {
     if (fetchedRef.current && !force) return;
     try {
       const res = await API.get('/crops', { headers: getAuthHeaders() });
@@ -56,7 +56,7 @@ const FarmerCrops = () => {
       console.error('Error fetching crops', err);
       return [];
     }
-  };
+  }, []);
 
   useEffect(() => { fetchCrops(); }, [fetchCrops]);
 

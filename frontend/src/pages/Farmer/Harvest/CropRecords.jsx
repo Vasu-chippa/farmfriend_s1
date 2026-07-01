@@ -6,377 +6,328 @@ import {
   updateRecord,
   deleteRecord,
 } from "../../../services/cropRecordService";
-import API from "../../../api";
+import API, { authCfg } from "../../../api";
+import logger from '../../../utils/logger';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./CropRecords.css";
-import "./Harvest.css";
-
+import Chart from "../../../components/Chart";
+import { FiPlus, FiEdit2, FiTrash2, FiDollarSign, FiPackage, FiList, FiMap } from 'react-icons/fi';
 
 const CropRecords = () => {
   const { cropId } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
-  const [crop, setCrop] = useState(null);
-  const [records, setRecords] = useState([]);
-  const [showForm, setShowForm] = useState(false);
+  useEffect(() => {
+    if (!cropId) return;
+    if (!/^[0-9a-fA-F]{24}$/.test(cropId)) {
+      toast.info('Please select or create a crop first');
+      navigate('/farmer/crops', { replace: true });
+    }
+  }, [cropId, navigate]);
+
+  const [crop, setCrop]           = useState(null);
+  const [records, setRecords]     = useState([]);
+  const [showForm, setShowForm]   = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editingAcres, setEditingAcres] = useState(false);
+  const [saving, setSaving]       = useState(false);
   const [cropAcres, setCropAcres] = useState(0);
+
   const [formData, setFormData] = useState({
-    cropId: cropId || "",
-    date: "",
-    cost: "",
-    quantity: "",
-    description: "",
-    fertilizer: "",
-    seeds: "",
-    workers: "",
-    transportCost: "",
+    cropId: cropId || "", date: "", cost: "", quantity: "", description: "",
+    fertilizer: "", seeds: "", workers: "", transportCost: "",
+    recordType: 'cost', activityType: '', hours: '', amountSpent: '', notes: '',
   });
 
-  // fetch crop details
   const fetchCrop = useCallback(async () => {
-    if (!cropId) return;
+    if (!cropId || cropId === 'new') return;
     try {
-      const res = await API.get(`/crops/${cropId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCrop(res.data);
-      setCropAcres(res.data.acres || 0);
-    } catch (err) {
+      const res = await API.get(`/crops/${cropId}`, authCfg());
+      setCrop(res.data); setCropAcres(res.data.acres || 0);
+    } catch {
       try {
-        const res2 = await API.get(`/harvest/${cropId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setCrop(res2.data);
-          setCropAcres(res2.data.acres || 0);
-      } catch (err2) {
-        console.error("Error fetching crop (both endpoints)", err, err2);
-        setCrop(null);
-      }
-    }
-  }, [cropId, token]);
-
-  // fetch records list
-  const fetchRecords = useCallback(async () => {
-    if (!cropId) return;
-    try {
-      const data = await getRecords(cropId);
-      setRecords(data);
-    } catch (err) {
-      console.error("Failed to fetch records:", err);
-      toast.error("Failed to fetch records");
+        const res2 = await API.get(`/harvest/${cropId}`, authCfg());
+        setCrop(res2.data); setCropAcres(res2.data.acres || 0);
+      } catch (e2) { logger.error("Fetch crop:", e2); setCrop(null); }
     }
   }, [cropId]);
 
-  // init
-  useEffect(() => {
-    fetchCrop();
-    fetchRecords();
-  }, [fetchCrop, fetchRecords]);
+  const fetchRecords = useCallback(async () => {
+    if (!cropId || cropId === 'new') return;
+    try { setRecords(await getRecords(cropId)); }
+    catch (e) { logger.error("Fetch records:", e); }
+  }, [cropId]);
 
-  const summary = useMemo(() => {
-    const totalCost = records.reduce((s, r) => s + Number(r.cost || 0), 0);
-    const totalQuantity = records.reduce((s, r) => s + Number(r.quantity || 0), 0);
-    const totalAcres = records.reduce((s, r) => s + Number(r.acres || 0), 0);
-    const numRecords = records.length;
-    const latestDate = records.length ? new Date(records[0].date) : null;
-    const earliestDate = records.length ? new Date(records[records.length - 1].date) : null;
-    return { totalCost, totalQuantity, totalAcres, numRecords, latestDate, earliestDate };
-  }, [records]);
+  useEffect(() => { fetchCrop(); fetchRecords(); }, [fetchCrop, fetchRecords]);
+
+  const summary = useMemo(() => ({
+    totalCost:     records.reduce((s, r) => s + Number(r.cost || r.amountSpent || 0), 0),
+    totalQuantity: records.reduce((s, r) => s + Number(r.quantity || 0), 0),
+    numRecords:    records.length,
+  }), [records]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((f) => ({ ...f, [name]: value }));
+    setFormData(f => ({ ...f, [name]: value }));
+  };
+
+  const resetFormFields = () => {
+    setFormData({ cropId, date: "", cost: "", quantity: "", description: "",
+      fertilizer: "", seeds: "", workers: "", transportCost: "",
+      recordType: 'cost', activityType: '', hours: '', amountSpent: '', notes: '' });
+    setEditingRecord(null); setShowForm(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.date || !formData.cost || !formData.quantity) {
-      toast.error("Please fill Date, Cost and Quantity");
-      return;
-    }
-
-    if (saving) return; // prevent duplicate submissions
+    if (!formData.date) { toast.error("Please select a valid date."); return; }
+    if (saving) return;
     setSaving(true);
     try {
+      const payload = { ...formData, cropId };
       if (editingRecord) {
-        const payload = { ...formData, cropId };
-        // remove acres from record payload (acres is managed separately)
-        if (payload.acres !== undefined) delete payload.acres;
         const updated = await updateRecord(editingRecord._id, payload);
-        setRecords((prev) => prev.map((r) => (r._id === updated._id ? updated : r)));
-        toast.success("Record updated", { toastId: 'record-updated' });
-        setEditingRecord(null);
+        setRecords(prev => prev.map(r => r._id === updated._id ? updated : r));
+        toast.success("Record updated.");
       } else {
-        const payload = { ...formData, cropId };
-        if (payload.acres !== undefined) delete payload.acres;
         const created = await addRecord(payload);
-        setRecords((prev) => [created, ...prev]);
-        toast.success("Record saved", { toastId: 'record-saved' });
+        setRecords(prev => [created, ...prev]);
+        toast.success("Record added.");
       }
-      setShowForm(false);
-      setShowAdvanced(false);
-      setFormData({
-        cropId,
-        date: "",
-        cost: "",
-        quantity: "",
-        description: "",
-        fertilizer: "",
-        seeds: "",
-        workers: "",
-        transportCost: "",
-      });
-    } catch (err) {
-      console.error("Save record error:", err);
-      const msg = err?.response?.data?.error || "Failed to save record";
-      toast.error(msg, { toastId: 'record-save-error' });
-    } finally {
-      setSaving(false);
-    }
+      resetFormFields();
+    } catch (e) { logger.error("Save:", e); toast.error("Failed to save."); }
+    finally { setSaving(false); }
   };
 
   const handleEdit = (record) => {
     setEditingRecord(record);
     setFormData({
       cropId,
-      date: record.date ? new Date(record.date).toISOString().slice(0, 10) : "",
-      cost: record.cost || "",
-      quantity: record.quantity || "",
-      description: record.description || "",
-      fertilizer: record.fertilizer || "",
-      seeds: record.seeds || "",
-      workers: record.workers || "",
-      transportCost: record.transportCost || "",
+      date:         record.date ? new Date(record.date).toISOString().slice(0, 10) : "",
+      cost:         record.cost || "", quantity: record.quantity || "",
+      description:  record.description || "", fertilizer: record.fertilizer || "",
+      seeds:        record.seeds || "", workers: record.workers || "",
+      transportCost:record.transportCost || "",
+      recordType:   record.recordType || (record.cost !== undefined ? 'cost' : 'activity'),
+      activityType: record.activityType || '', hours: record.hours || '',
+      amountSpent:  record.amountSpent || '', notes: record.notes || '',
     });
     setShowForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
-    try {
-      await deleteRecord(id);
-      setRecords((prev) => prev.filter((r) => r._id !== id));
-      toast.success("Record deleted");
-    } catch (err) {
-      console.error("Delete error:", err);
-      toast.error("Failed to delete record");
-    }
+    try { await deleteRecord(id); setRecords(prev => prev.filter(r => r._id !== id)); toast.success("Deleted."); }
+    catch (e) { logger.error("Delete:", e); }
   };
 
+  const cropImgSrc = crop?.image
+    ? `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}${crop.image}`
+    : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+
   return (
-    <div className="crop-records-page">
-      <div className="left-panel">
-        <button onClick={() => navigate(-1)} className="back-btn">
-          ← Back
-        </button>
+    <div className="cr-root">
+      <div className="cr-container">
 
-        {crop ? (
-          <div className="crop-card">
-            <img
-              src={
-                crop?.image
-                  ? `${process.env.PUBLIC_URL}/cropimages/${crop.image}`
-                  : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`
-              }
-              alt={crop?.name || "crop"}
-              className="crop-image"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
-              }}
-            />
-
-            <div className="crop-info">
-              <h2>🌱 {crop.name}</h2>
-              <p><b>Category:</b> {crop.category || "General"}</p>
-              <p><b>Season:</b> {crop.season || "N/A"}</p>
-              <p><b>Sowing Time:</b> {crop.sowingTime || crop.sowing || "N/A"}</p>
-              <p><b>Price:</b> ₹{crop.price || "N/A"}/kg</p>
-              <p><b>Quantity:</b> {crop.quantity || "N/A"} kg</p>
-              <p><b>Quality:</b> {crop.quality || (crop.isOrganic ? "Organic" : "Standard")}</p>
-            </div>
+        {/* Header Element */}
+        <header className="cr-header">
+          <div className="cr-head-left">
+            <h1>📋 Crop Records Hub</h1>
+            <p className="cr-subtitle">Track metrics, volumetric inventory indices, execution tasks, and operational payouts.</p>
           </div>
-        ) : (
-          <p>Loading crop...</p>
-        )}
-        {/* Summary / Started details box */}
-        <div className="crop-stats">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3>📊 Started Details</h3>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {!editingAcres ? (
-              <div style={{ fontSize: 14, color: '#333' }}>Acres: <strong>{cropAcres || '-'}</strong></div>
-            ) : (
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <input type="number" value={cropAcres} onChange={(e) => setCropAcres(e.target.value)} style={{ width: 100, padding: '6px 8px', borderRadius: 6 }} />
-                <button className="save-btn" onClick={async () => {
-                  try {
-                    await API.put(`/crops/${cropId}`, { acres: Number(cropAcres) }, { headers: { Authorization: `Bearer ${token}` } });
-                    toast.success('Acres updated', { toastId: 'acres-updated' });
-                    // refresh crop and records
-                    await fetchCrop();
-                    setEditingAcres(false);
-                    window.dispatchEvent(new Event('harvestUpdated'));
-                  } catch (err) {
-                    console.error('Failed to update acres', err);
-                    toast.error('Failed to update acres');
-                  }
-                }}>Save</button>
-                <button className="icon-btn delete" onClick={() => { setEditingAcres(false); setCropAcres(crop?.acres || 0); }}>✖</button>
-              </div>
-            )}
-            {!editingAcres && (<button className="add-btn" onClick={() => setEditingAcres(true)}>Edit Acres</button>)}
-          </div>
-          </div>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="label">Started</div>
-              <div className="value">{summary.earliestDate ? summary.earliestDate.toLocaleDateString() : (crop?.dateAdded ? new Date(crop.dateAdded).toLocaleDateString() : '—')}</div>
-            </div>
-
-            <div className="stat-item">
-              <div className="label">Money Spent</div>
-              <div className="value">₹{summary.totalCost}</div>
-            </div>
-
-            <div className="stat-item">
-              <div className="label">Latest Record</div>
-              <div className="value">{summary.latestDate ? summary.latestDate.toLocaleDateString() : '—'}</div>
-            </div>
-
-            <div className="stat-item">
-              <div className="label">Total Quantity</div>
-              <div className="value">{summary.totalQuantity} kg</div>
-            </div>
-
-            {/* <div className="stat-item">
-              <div className="label">Acres (sum)</div>
-              <div className="value">{summary.totalAcres || '-'}</div>
-            </div> */}
-
-            <div className="stat-item">
-              <div className="label">Records</div>
-              <div className="value">{summary.numRecords}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="right-panel">
-        <div className="records-header">
-          <h3>📑 Records</h3>
-          <button
-            onClick={() => {
-              setShowForm((s) => !s);
-              setEditingRecord(null);
-            }}
-            className="add-btn"
-          >
-            {showForm ? "Cancel" : "➕ Add Record"}
+          <button className="cr-btn-primary" onClick={() => showForm ? resetFormFields() : setShowForm(true)}>
+            <FiPlus /> {showForm ? 'Hide Logger' : 'Log Operational Segment'}
           </button>
-        </div>
+        </header>
 
-        {showForm && (
-          <form onSubmit={handleSubmit} className="record-form">
-            <div className="form-row">
-              <label>Date</label>
-              <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+        {/* Hero Matrix */}
+        <section className="cr-hero-matrix">
+          <div className="cr-crop-card">
+            <div className="cr-crop-img-wrap">
+              <img src={cropImgSrc} alt="crop" className="cr-crop-img"
+                onError={e => { e.target.onerror = null; e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`; }} />
             </div>
-            <div className="form-row">
-              <label>Cost (₹)</label>
-              <input type="number" name="cost" value={formData.cost} onChange={handleChange} required />
+            <div className="cr-crop-info">
+              <h2>🌾 {crop?.name || 'Loading...'}</h2>
+              <div className="cr-meta-grid">
+                <div><strong>Category Domain:</strong> {crop?.category || 'General Cultivation'}</div>
+                <div><strong>Timeline Cycle:</strong> {crop?.season || 'Active Framework'}</div>
+                <div><strong>Sowing Index:</strong> {crop?.sowingTime || crop?.sowing || 'N/A'}</div>
+                <div><strong>Baseline Evaluation:</strong> ₹{crop?.price || '0'}/kg</div>
+                <div><strong>In-Stock Volume:</strong> {crop?.quantity || '0'} kg</div>
+                <div><strong>Classification:</strong> {crop?.quality || (crop?.isOrganic ? 'Organic' : 'Standard Grade')}</div>
+              </div>
             </div>
-            <div className="form-row">
-              <label>Quantity (kg)</label>
-              <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} required />
-            </div>
-            <div className="form-row full">
-              <label>Description</label>
-              <textarea name="description" value={formData.description} onChange={handleChange} />
-            </div>
-            <button type="button" className="toggle-btn" onClick={() => setShowAdvanced((s) => !s)}>
-              {showAdvanced ? "Hide Advanced ▲" : "Show Advanced ▼"}
-            </button>
-            {showAdvanced && (
-              <div className="advanced-fields">
-                <div className="form-row">
-                  <label>Seeds Used (kg)</label>
-                  <input type="number" name="seeds" value={formData.seeds} onChange={handleChange} />
-                </div>
-                <div className="form-row">
-                  <label>Workers Count</label>
-                  <input type="number" name="workers" value={formData.workers} onChange={handleChange} />
-                </div>
-                <div className="form-row">
-                  <label>Transport Cost (₹)</label>
-                  <input type="number" name="transportCost" value={formData.transportCost} onChange={handleChange} />
-                </div>
-                <div className="form-row">
-                  <label>Fertilizer Used</label>
-                  <input type="text" name="fertilizer" value={formData.fertilizer} onChange={handleChange} />
+          </div>
+
+          <div className="cr-kpi-grid">
+            {[
+              { icon: <FiDollarSign />, cls: 'cr-kpi-green', label: 'FUNDS INVESTED',      val: `₹${summary.totalCost.toLocaleString()}` },
+              { icon: <FiPackage />,    cls: 'cr-kpi-blue',  label: 'VOLUME OUTPUT',       val: `${summary.totalQuantity.toLocaleString()} kg` },
+              { icon: <FiList />,       cls: 'cr-kpi-purple',label: 'INDEXED ENTRIES',     val: `${summary.numRecords} Segments` },
+              { icon: <FiMap />,        cls: 'cr-kpi-amber', label: 'VOLUMETRIC FOOTPRINT',val: cropAcres ? `${cropAcres} Acres` : '—' },
+            ].map(k => (
+              <div className="cr-kpi-card" key={k.label}>
+                <div className={`cr-kpi-icon ${k.cls}`}>{k.icon}</div>
+                <div>
+                  <div className="cr-kpi-label">{k.label}</div>
+                  <div className="cr-kpi-value">{k.val}</div>
                 </div>
               </div>
-            )}
-            <div className="form-actions">
-              <button type="submit" className="save-btn">
-                {editingRecord ? "Update Record" : "Save Record"}
-              </button>
-            </div>
-          </form>
-        )}
+            ))}
+          </div>
+        </section>
 
-        {!showForm && (
-          <>
-            {records && records.length > 0 ? (
-              <table className="records-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Cost (₹)</th>
-                    <th>Quantity (kg)</th>
-                    <th>Acres</th>
-                    <th>Description</th>
-                    <th>Seeds</th>
-                    <th>Workers</th>
-                    <th>Transport (₹)</th>
-                    <th>Fertilizer</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r) => (
-                    <tr key={r._id}>
-                      <td>{new Date(r.date).toLocaleDateString()}</td>
-                      <td>{r.cost}</td>
-                      <td>{r.quantity}</td>
-                      <td>{r.acres ?? '-'}</td>
-                      <td className="desc-cell">{r.description}</td>
-                      <td>{r.seeds ?? "-"}</td>
-                      <td>{r.workers ?? "-"}</td>
-                      <td>{r.transportCost ?? "-"}</td>
-                      <td>{r.fertilizer ?? "-"}</td>
-                      <td>
-                        <button className="icon-btn edit" onClick={() => handleEdit(r)}>✏️</button>
-                        <button className="icon-btn delete" onClick={() => handleDelete(r._id)}>🗑️</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p className="empty">⚠ No records yet</p>
+        {/* Workspace Panels */}
+        <div className="cr-workspace">
+
+          {/* Left Column Fields */}
+          <div className="cr-col">
+            {showForm && (
+              <div className="cr-card">
+                <div className="cr-card-title">Log Operational Segment</div>
+                <form onSubmit={handleSubmit} className="cr-inline-form">
+                  <div className="cr-form-row-inline">
+                    <div className="cr-field">
+                      <label>Date</label>
+                      <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+                    </div>
+                    <div className="cr-field">
+                      <label>Record Type</label>
+                      <select name="recordType" value={formData.recordType} onChange={handleChange}>
+                        <option value="cost">Cost Record</option>
+                        <option value="activity">Activity</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {formData.recordType === 'cost' ? (
+                    <div className="cr-form-row-inline">
+                      <div className="cr-field">
+                        <label>Cost Value (₹)</label>
+                        <input type="number" name="cost" value={formData.cost} onChange={handleChange} required />
+                      </div>
+                      <div className="cr-field">
+                        <label>Quantity (kg)</label>
+                        <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} required />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="cr-form-row-inline">
+                        <div className="cr-field">
+                          <label>Activity Type</label>
+                          <select name="activityType" value={formData.activityType} onChange={handleChange} required>
+                            <option value="">Select Activity</option>
+                            {['Seeding','Planting','Irrigation','Fertilizer','Pesticide','Weeding','Harvesting','Transportation','Other'].map(a =>
+                              <option key={a} value={a}>{a}</option>
+                            )}
+                          </select>
+                        </div>
+                        <div className="cr-field">
+                          <label>Workers</label>
+                          <input type="number" name="workers" value={formData.workers} onChange={handleChange} />
+                        </div>
+                      </div>
+                      <div className="cr-form-row-inline">
+                        <div className="cr-field">
+                          <label>Hours</label>
+                          <input type="number" step="0.1" name="hours" value={formData.hours} onChange={handleChange} />
+                        </div>
+                        <div className="cr-field">
+                          <label>Amount Spent (₹)</label>
+                          <input type="number" name="amountSpent" value={formData.amountSpent} onChange={handleChange} />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="cr-form-actions">
+                    <button type="button" className="cr-cancel-btn" onClick={resetFormFields}>Cancel</button>
+                    <button type="submit" className="cr-submit-btn" disabled={saving}>
+                      {saving ? 'Saving…' : 'Submit Record'}
+                    </button>
+                  </div>
+                </form>
+              </div>
             )}
-          </>
-        )}
+
+            <div className="cr-card">
+              <div className="cr-card-title">Log &amp; Activity Manager</div>
+              <div className="cr-table-wrap">
+                <table className="cr-table">
+                  <thead>
+                    <tr>
+                      <th>Crop</th><th>Type / Cycle</th><th>Notes / Sowing</th><th>Stock Delta</th><th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {records.length > 0 ? records.map(r => (
+                      <tr key={r._id}>
+                        <td>
+                          <div className="cr-crop-thumb-wrap">
+                            <img src={cropImgSrc} alt="crop" className="cr-crop-thumb" />
+                            <span>{crop?.name || 'Loading...'}</span>
+                          </div>
+                        </td>
+                        <td>{r.recordType === 'activity' ? (r.activityType || 'General') : 'Cost Entry'}</td>
+                        <td className="cr-td-muted">{r.recordType === 'activity' ? (r.notes || '—') : (r.description || '—')}</td>
+                        <td className="cr-td-stock">{r.quantity ? `${r.quantity} kg` : '—'}</td>
+                        <td className="cr-td-actions">
+                          <button className="cr-icon-btn" onClick={() => handleEdit(r)}><FiEdit2 /></button>
+                          <button className="cr-icon-btn cr-icon-btn-del" onClick={() => handleDelete(r._id)}><FiTrash2 /></button>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan={5} className="cr-empty">No entries logged yet.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column Layout */}
+          <div className="cr-col">
+            <div className="cr-card">
+              <div className="cr-card-title">Performance Metrics</div>
+              <div className="cr-chart-box">
+                <Chart />
+              </div>
+            </div>
+
+            <div className="cr-card">
+              <div className="cr-card-title">Timeline Stream</div>
+              <div className="cr-timeline-table-wrap">
+                <table className="cr-timeline-table">
+                  <thead>
+                    <tr><th>Log Entry</th><th>Fiscal</th><th>Delta</th></tr>
+                  </thead>
+                  <tbody>
+                    {records.map(r => (
+                      <tr key={`tl-${r._id}`}>
+                        <td>
+                          <div className="cr-tl-dot-row">
+                            <span className="cr-tl-dot" />
+                            <div>
+                              <div className="cr-tl-title">{r.activityType || 'Inventory Segment'}</div>
+                              <div className="cr-tl-date">{new Date(r.date).toLocaleDateString()}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="cr-tl-fiscal">₹{r.cost || r.amountSpent || 0}</td>
+                        <td className="cr-tl-weight">{r.quantity || 0} kg</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <ToastContainer position="top-right" autoClose={2000} />
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
     </div>
   );
 };

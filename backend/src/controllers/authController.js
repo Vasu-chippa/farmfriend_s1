@@ -24,7 +24,10 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      landSize,
+      regionId: req.body.regionId || undefined,
+      district: req.body.district || undefined,
+      village: req.body.village || undefined,
+      phone: req.body.phone || undefined,
     });
 
     const token = generateToken(user._id, user.role);

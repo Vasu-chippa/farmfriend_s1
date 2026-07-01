@@ -1,8 +1,10 @@
 import axios from "axios";
+const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
 const API = axios.create({
-  // Prefer explicit production URL `REACT_APP_API_URL`, fallback to the
-  // older `REACT_APP_API_BASE_URL`, and finally use '/api' for local dev
-  baseURL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "/api",
+  // In local development use the CRA proxy, otherwise use the configured API base URL.
+  baseURL: isLocalhost
+    ? "/api"
+    : process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "/api",
   withCredentials: true, // send cookies for auth
 });
 
@@ -26,4 +28,15 @@ API.interceptors.request.use((config) => {
   return config;
 });
 export default API;
+
+// Helper to build auth config for API calls when needed by services/components.
+export const authCfg = (overrides = {}) => {
+  try {
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    return { headers: { ...headers, ...(overrides.headers || {}) }, ...overrides };
+  } catch (e) {
+    return { headers: { ...(overrides.headers || {}) }, ...overrides };
+  }
+};
 

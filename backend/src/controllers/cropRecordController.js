@@ -22,26 +22,54 @@ export const addRecord = async (req, res) => {
       seeds,
       workers,
       transportCost,
+      recordType,
+      activityType,
+      hours,
+      amountSpent,
+      notes,
     } = req.body;
 
-    // minimal validation
-    if (!cropId || !date || cost === undefined || quantity === undefined) {
-      return res.status(400).json({ error: "Missing required fields (cropId, date, cost, quantity)" });
+    if (!cropId || !date) {
+      return res.status(400).json({ error: "Missing required fields (cropId, date)" });
     }
 
-    const record = new CropRecord({
+    if (recordType === 'activity') {
+      if (amountSpent === undefined || amountSpent === null) {
+        return res.status(400).json({ error: "Missing required field amountSpent for activity records" });
+      }
+    } else {
+      if (cost === undefined || quantity === undefined) {
+        return res.status(400).json({ error: "Missing required fields (cost, quantity) for cost records" });
+      }
+    }
+
+    const recordData = {
       farmer: req.user._id,
       cropId,
       date,
-      cost,
-      quantity,
       acres,
       description,
       fertilizer,
       seeds,
       workers,
       transportCost,
-    });
+      recordType: recordType || 'cost',
+      activityType,
+      hours,
+      notes,
+    };
+
+    if (recordType === 'activity') {
+      recordData.amountSpent = amountSpent;
+      recordData.cost = cost !== undefined ? cost : undefined;
+      recordData.quantity = quantity !== undefined ? quantity : undefined;
+    } else {
+      recordData.cost = cost;
+      recordData.quantity = quantity;
+      recordData.amountSpent = amountSpent !== undefined ? amountSpent : undefined;
+    }
+
+    const record = new CropRecord(recordData);
 
     await record.save();
     res.status(201).json(record);
@@ -98,6 +126,11 @@ export const updateRecord = async (req, res) => {
       seeds,
       workers,
       transportCost,
+      recordType,
+      activityType,
+      hours,
+      amountSpent,
+      notes,
     }) => ({
       date,
       cost,
@@ -108,6 +141,11 @@ export const updateRecord = async (req, res) => {
       seeds,
       workers,
       transportCost,
+      recordType,
+      activityType,
+      hours,
+      amountSpent,
+      notes,
     }))(req.body);
 
     const record = await CropRecord.findOneAndUpdate(
