@@ -81,8 +81,8 @@ const allowedOrigins = [
 
 const allowDeploySubdomains = process.env.ALLOW_DEPLOY_SUBDOMAINS === "true";
 const deployOriginPatterns = [
-  /.\.netlify\.app$/,
-  /.\.render\.com$/,
+  /(^|\.)netlify\.app$/,
+  /(^|\.)render\.com$/,
 ];
 
 // CORS configuration

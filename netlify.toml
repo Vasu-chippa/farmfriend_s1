@@ -7,8 +7,8 @@
   publish = "build"
 
 [context.production.environment]
-  # Set this in Netlify UI too: REACT_APP_API_URL=https://farmfriend-s1.onrender.com/api
-  REACT_APP_API_URL = "https://farmfriend-s1.onrender.com/api"
+  # Set this in Netlify UI too: REACT_APP_API_URL=https://farmfriend-s1-vjn8.onrender.com/api
+  REACT_APP_API_URL = "https://farmfriend-s1-vjn8.onrender.com/api"
 
 [[redirects]]
   from = "/api/*"
