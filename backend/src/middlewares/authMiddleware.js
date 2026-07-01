@@ -9,31 +9,43 @@ import User from "../models/User.js";
  */
 export const protect = async (req, res, next) => {
   try {
-    let token;
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.split(" ")[1];
-    } else if (req.cookies && req.cookies.token) {
-      token = req.cookies.token;
+    let headerToken = authHeader && authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
+    if (headerToken && /^(null|undefined|\s*)$/i.test(headerToken)) {
+      headerToken = null;
     }
+    const cookieToken = req.cookies?.token || null;
 
+    let token = headerToken || cookieToken;
     if (!token) {
       return res.status(401).json({ message: "No token, authorization denied" });
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      // If bearer token is invalid, but a cookie token exists, fall back to cookie auth.
+      if (headerToken && cookieToken) {
+        decoded = jwt.verify(cookieToken, process.env.JWT_SECRET);
+      } else {
+        throw error;
+      }
+    }
+
     const userId = decoded._id || decoded.id || decoded.userId || decoded.uid;
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return res.status(401).json({ message: "User not found, authorization denied" });
     }
 
-    // normalized user object: always provide _id
     req.user = {
       ...decoded,
       _id: userId,
-      role: user.role, // fresh role from db
+      role: user.role,
     };
 
     next();

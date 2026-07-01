@@ -73,6 +73,7 @@ const parseCommaSeparatedOrigins = (value) =>
 const allowedOrigins = [
   process.env.CLIENT_URL,
   ...parseCommaSeparatedOrigins(process.env.ALLOWED_ORIGINS),
+  ...parseCommaSeparatedOrigins(process.env.CORS_ALLOWED_ORIGINS),
   // Local dev hosts
   "http://localhost:3000",
   "http://127.0.0.1:3000",
@@ -86,6 +87,8 @@ const deployOriginPatterns = [
   /(^|\.)netlify\.app$/,
   /(^|\.)render\.com$/,
 ];
+
+const enableCorsDebug = process.env.DEBUG_CORS === "true";
 
 // CORS configuration
 // Behavior:
@@ -103,16 +106,22 @@ const corsOptionsDelegate = (origin, callback) => {
   }
 
   // Allow configured explicit origins
-  if (allowedOrigins.includes(origin)) return callback(null, true);
+  const explicitOriginAllowed = allowedOrigins.includes(origin);
+  if (explicitOriginAllowed) {
+    if (enableCorsDebug) console.log(`[CORS] allowed explicit origin=${origin}`);
+    return callback(null, true);
+  }
 
   // Allow dynamic deploy subdomains for Netlify and Render when opting in
   if (allowDeploySubdomains && typeof origin === 'string') {
-    if (deployOriginPatterns.some((pattern) => pattern.test(origin))) {
+    const deployOriginAllowed = deployOriginPatterns.some((pattern) => pattern.test(origin));
+    if (deployOriginAllowed) {
+      if (enableCorsDebug) console.log(`[CORS] allowed deploy origin=${origin}`);
       return callback(null, true);
     }
   }
 
-  // Deny other origins (will result in no CORS headers for those requests)
+  if (enableCorsDebug) console.warn(`[CORS] denied origin=${origin}`);
   return callback(null, false);
 };
 
