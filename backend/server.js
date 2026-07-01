@@ -79,7 +79,9 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-const allowDeploySubdomains = process.env.ALLOW_DEPLOY_SUBDOMAINS === "true";
+const allowDeploySubdomains =
+  process.env.ALLOW_DEPLOY_SUBDOMAINS !== "false" &&
+  process.env.NODE_ENV === "production";
 const deployOriginPatterns = [
   /(^|\.)netlify\.app$/,
   /(^|\.)render\.com$/,
@@ -89,7 +91,7 @@ const deployOriginPatterns = [
 // Behavior:
 // - In development (NODE_ENV !== 'production') allow all origins to avoid CORS blockers.
 // - In production, allow origins in `allowedOrigins` or via `ALLOWED_ORIGINS`.
-// - To allow Netlify / Render dynamic deploy domains, set ALLOW_DEPLOY_SUBDOMAINS=true.
+// - By default, Netlify and Render deploy subdomains are permitted unless explicitly disabled.
 // - Use `CORS_ALLOW_ALL=true` to permit all origins in production (use with caution).
 const corsOptionsDelegate = (origin, callback) => {
   // Allow non-browser requests (no origin)
