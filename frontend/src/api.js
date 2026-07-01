@@ -1,12 +1,19 @@
 import axios from "axios";
 const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
+const envApiUrl = isLocalhost
+  ? "/api"
+  : process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "/api";
 const API = axios.create({
   // In local development use the CRA proxy, otherwise use the configured API base URL.
-  baseURL: isLocalhost
-    ? "/api"
-    : process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "/api",
+  baseURL: envApiUrl,
   withCredentials: true, // send cookies for auth
 });
+
+const getApiBaseUrl = () => envApiUrl.replace(/\/api\/?$/i, "");
+export const getBackendImageUrl = (src) => {
+  if (!src) return "";
+  return src.startsWith("http") ? src : `${getApiBaseUrl()}${src}`;
+};
 
 // Sanitize Authorization header and attach token from localStorage only when present.
 API.interceptors.request.use((config) => {

@@ -1,7 +1,7 @@
 // apps/frontend/src/pages/Farmer/Marketplace/ProductDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API from "../../../api";
+import API, { getBackendImageUrl } from "../../../api";
 import "./FarmerMarketplace.css";
 
 function ProductDetails() {
@@ -36,7 +36,7 @@ function ProductDetails() {
           product.images.map((img, i) => (
             <img
               key={i}
-              src={`http://localhost:5000/uploads/${img}`}
+              src={getBackendImageUrl(`/uploads/${img}`)}
               alt={`crop-${i}`}
               className="gallery-img"
             />

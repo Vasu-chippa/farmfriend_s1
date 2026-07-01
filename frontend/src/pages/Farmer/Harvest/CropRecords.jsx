@@ -6,7 +6,7 @@ import {
   updateRecord,
   deleteRecord,
 } from "../../../services/cropRecordService";
-import API, { authCfg } from "../../../api";
+import API, { getBackendImageUrl } from "../../../api";
 import logger from '../../../utils/logger';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -121,11 +121,8 @@ const CropRecords = () => {
     catch (e) { logger.error("Delete:", e); }
   };
 
-  const apiBase = process.env.REACT_APP_API_URL
-    ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/, "")
-    : process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
   const cropImgSrc = crop?.image
-    ? `${apiBase}${crop.image}`
+    ? getBackendImageUrl(crop.image)
     : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
 
   return (

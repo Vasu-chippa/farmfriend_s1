@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import API from '../../../api';
+import API, { getBackendImageUrl } from '../../../api';
 import { toast } from 'react-toastify';
 import { FiArrowLeft, FiPlus, FiBox, FiStar, FiClock, FiDollarSign } from 'react-icons/fi';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
@@ -84,7 +84,7 @@ const FarmerCropDetailsTW = () => {
 
   const resolveImage = (c) => {
     if (!c) return `/cropimages/default.jpeg`;
-    if (c.images && c.images.length) return c.images[0].startsWith('http') ? c.images[0] : `http://localhost:5000${c.images[0]}`;
+    if (c.images && c.images.length) return c.images[0].startsWith('http') ? c.images[0] : getBackendImageUrl(c.images[0]);
     return `/cropimages/${encodeURIComponent((c.image || c.name || 'default') + '.jpeg')}`;
   };
 
