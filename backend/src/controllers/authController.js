@@ -42,6 +42,7 @@ export const registerUser = async (req, res) => {
 
     return res.status(201).json({
       message: "User registered successfully",
+      token,
       user: {
         _id: user._id,
         fullName: user.fullName,
@@ -83,6 +84,7 @@ export const loginUser = async (req, res) => {
 
     return res.json({
       message: "Login successful",
+      token,
       user: {
         _id: user._id,
         fullName: user.fullName,

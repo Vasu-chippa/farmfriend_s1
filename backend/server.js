@@ -56,6 +56,7 @@ printEnvSummary();
 
 // Initialize express app
 const app = express();
+app.set("trust proxy", 1);
 
 // Middleware
 app.use(express.json());
@@ -79,7 +80,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:5173",
-].filter(Boolean);
+].filter(Boolean).map((origin) => origin.toLowerCase().replace(/\/$/, ""));
 
 const allowDeploySubdomains =
   process.env.ALLOW_DEPLOY_SUBDOMAINS !== "false" &&
@@ -106,16 +107,19 @@ const corsOptionsDelegate = (origin, callback) => {
     return callback(null, true);
   }
 
+  // Normalize origin for comparison.
+  const normalizedOrigin = typeof origin === 'string' ? origin.toLowerCase().replace(/\/$/, '') : origin;
+
   // Allow configured explicit origins
-  const explicitOriginAllowed = allowedOrigins.includes(origin);
+  const explicitOriginAllowed = typeof normalizedOrigin === 'string' && allowedOrigins.includes(normalizedOrigin);
   if (explicitOriginAllowed) {
     if (enableCorsDebug) console.log(`[CORS] allowed explicit origin=${origin}`);
     return callback(null, true);
   }
 
   // Allow dynamic deploy subdomains for Netlify and Render when opting in
-  if (allowDeploySubdomains && typeof origin === 'string') {
-    const deployOriginAllowed = deployOriginPatterns.some((pattern) => pattern.test(origin));
+  if (allowDeploySubdomains && typeof normalizedOrigin === 'string') {
+    const deployOriginAllowed = deployOriginPatterns.some((pattern) => pattern.test(normalizedOrigin));
     if (deployOriginAllowed) {
       if (enableCorsDebug) console.log(`[CORS] allowed deploy origin=${origin}`);
       return callback(null, true);

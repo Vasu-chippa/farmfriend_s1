@@ -34,6 +34,22 @@ API.interceptors.request.use((config) => {
   }
   return config;
 });
+
+API.interceptors.response.use(
+  (response) => {
+    try {
+      const token = response?.data?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
+
 export default API;
 
 // Helper to build auth config for API calls when needed by services/components.
