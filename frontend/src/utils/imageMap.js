@@ -43,9 +43,10 @@ export const getCropImageFromSrc = (src) => {
   if (!src) return defaultCropImage;
   if (typeof src !== 'string') return defaultCropImage;
   const trimmed = src.trim();
-  if (trimmed.startsWith('http')) return trimmed;
+  if (!trimmed) return defaultCropImage;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
   if (trimmed.startsWith('/')) return trimmed;
   const normalized = normalizeKey(trimmed);
   if (cropImages[normalized]) return cropImages[normalized];
-  return `/cropimages/${encodeURIComponent(trimmed)}`;
+  return defaultCropImage;
 };

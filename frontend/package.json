@@ -32,7 +32,7 @@
     ]
   },
   "proxy": "https://farmfriend-s1-vjn8.onrender.com",
-  "homepage": ".",
+  "homepage": "/",
   "browserslist": {
     "production": [
       ">0.2%",
