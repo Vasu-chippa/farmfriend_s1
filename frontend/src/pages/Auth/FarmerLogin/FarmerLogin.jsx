@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../../../api";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-import wave from "../wave.png";
-import bg from "../bg.svg";
-import avatar from "../avatar.svg";
 import "../Auth.css";
 
 function FarmerLogin() {
@@ -49,15 +46,15 @@ function FarmerLogin() {
 
   return (
     <div className="auth-page">
-      <img src={wave} alt="wave" className="wave" />
+      <img src="/wave.png" alt="wave" className="wave" />
       <div className="auth-container">
         <div className="auth-image">
-          <img src={bg} alt="background" />
+          <img src="/bg.svg" alt="background" />
         </div>
 
         <div className="auth-content">
           <form onSubmit={handleSubmit}>
-            <img src={avatar} alt="avatar" className="avatar" />
+            <img src="/avatar.svg" alt="avatar" className="avatar" />
             <h2 className="title">Farmer Login</h2>
 
             <div className="floating-label-group">
