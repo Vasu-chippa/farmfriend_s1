@@ -36,7 +36,6 @@
 //         setFormData((f) => ({ ...f, name: res.data.name }));
 
 //         const rec = await axios.get(
-//           `http://localhost:5000/api/crop-records/${id}`,
 //           { headers: { Authorization: `Bearer ${token}` } }
 //         );
 //         setRecords(rec.data);
@@ -56,7 +55,6 @@
 //     try {
 //       if (editingRecord) {
 //         const res = await axios.put(
-//           `http://localhost:5000/api/crop-records/${editingRecord._id}`,
 //           formData,
 //           { headers: { Authorization: `Bearer ${token}` } }
 //         );
@@ -64,7 +62,6 @@
 //         setEditingRecord(null);
 //       } else {
 //         const res = await axios.post(
-//           "http://localhost:5000/api/crop-records",
 //           formData,
 //           { headers: { Authorization: `Bearer ${token}` } }
 //         );
@@ -94,7 +91,6 @@
 //   };
 
 //   const handleDelete = async (recordId) => {
-//     await axios.delete(`http://localhost:5000/api/crop-records/${recordId}`, {
 //       headers: { Authorization: `Bearer ${token}` },
 //     });
 //     setRecords(records.filter((r) => r._id !== recordId));

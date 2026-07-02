@@ -53,7 +53,6 @@
 
 //   const handleAddToMyCrops = async () => {
 //     try {
-//       await axios.post("http://localhost:5000/api/mycrops/add", {
 //         cropId,
 //       });
 //       alert("✅ Crop added to your list!");
