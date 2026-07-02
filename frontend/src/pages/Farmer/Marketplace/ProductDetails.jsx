@@ -42,7 +42,7 @@ function ProductDetails() {
             />
           ))
         ) : (
-          <img src="/default-crop.jpg" alt="default" className="gallery-img" />
+          <img src="/cropimages/default.jpeg" alt="default" className="gallery-img" />
         )}
       </div>
 

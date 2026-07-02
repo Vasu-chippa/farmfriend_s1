@@ -6,6 +6,7 @@ import { FiBox, FiStar } from 'react-icons/fi';
 import API from '../../api';
 import './CropCardModern.css';
 import { toast } from 'react-toastify';
+import { getCropImageFromSrc } from '../../utils/imageMap';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 8 },
@@ -89,11 +90,8 @@ const CropCardModern = ({ crop }) => {
   };
 
   const imageSrc = crop.images && crop.images.length > 0
-    ? (crop.images[0].startsWith('http') ? crop.images[0] : (() => {
-      const base = process.env.REACT_APP_API_BASE_URL || (process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/i, '') : null) || 'https://farmfriend-s1-vjn8.onrender.com';
-      return crop.images[0].startsWith('/') ? `${base}${crop.images[0]}` : `${base}/${crop.images[0]}`;
-    })())
-    : (crop.image ? `/cropimages/${encodeURIComponent(crop.image)}` : `/cropimages/default.jpeg`);
+    ? (crop.images[0].startsWith('http') ? crop.images[0] : getCropImageFromSrc(crop.images[0]))
+    : getCropImageFromSrc(crop.image || crop.name);
 
   useEffect(() => {
     setIsAdded(checkAdded());

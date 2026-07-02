@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API, { getBackendImageUrl } from "../../../api";
+import API from "../../../api";
 import { motion } from "framer-motion";
 import { FaRupeeSign, FaBoxOpen, FaStar, FaLeaf } from "react-icons/fa";
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { getCropImageFromSrc, getCropImageByName } from '../../../utils/imageMap';
 // toast is not used here
 import "./CropDetails.css";
 
@@ -21,8 +22,9 @@ function Img({ src, alt, className }) {
 }
 
 function resolveImageSrc(s) {
-  if (!s) return '';
-  return s.startsWith('http') ? s : getBackendImageUrl(s);
+  if (!s) return getCropImageByName('default');
+  if (s.startsWith('http')) return s;
+  return getCropImageFromSrc(s);
 }
 
 function ImageCarousel({ images, name }) {

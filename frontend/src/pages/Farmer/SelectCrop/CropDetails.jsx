@@ -60,7 +60,7 @@ const CropDetails = () => {
   return (
     <div className="crop-details">
       <div className="crop-header">
-        <img src={crop.image || "/default-crop.jpg"} alt={crop.name} />
+        <img src={crop.image || "/cropimages/default.jpeg"} alt={crop.name} />
         <div className="crop-info">
           <h2>{crop.name}</h2>
           <p>{crop.description || "No description available"}</p>

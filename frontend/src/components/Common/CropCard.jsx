@@ -2,11 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import './CropCard.css';
+import { getCropImageFromSrc } from '../../utils/imageMap';
 
 const CropCard = ({ crop, onClick, onAdd, disabledAdd, highlight }) => {
-  const imgSrc = crop.image
-    ? (crop.image.startsWith('http') ? crop.image : `/cropimages/${encodeURIComponent(crop.image)}`)
-    : `/cropimages/${encodeURIComponent((crop.name||'default').toLowerCase() + '.jpeg')}`;
+  const imgSrc = getCropImageFromSrc(crop?.image || crop?.name);
 
   const status = crop.status || (crop.quantity > 0 ? 'Ready' : 'Growing');
 

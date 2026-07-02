@@ -8,6 +8,7 @@ import {
 } from "../../../services/cropRecordService";
 import API, { getBackendImageUrl } from "../../../api";
 import logger from '../../../utils/logger';
+import { getCropImageByName, getCropImageFromSrc } from '../../../utils/imageMap';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./CropRecords.css";
@@ -123,7 +124,7 @@ const CropRecords = () => {
 
   const cropImgSrc = crop?.image
     ? getBackendImageUrl(crop.image)
-    : `/cropimages/default.jpeg`;
+    : getCropImageByName('default');
 
   return (
     <div className="cr-root">

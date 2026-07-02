@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import API, { getBackendImageUrl } from '../../../api';
 import { toast } from 'react-toastify';
+import { getCropImageByName, getCropImageFromSrc } from '../../../utils/imageMap';
 import {
   LineChart,
   Line,
@@ -67,11 +68,9 @@ const FarmerCropDetails = () => {
   }, [id, location.state]);
 
   const resolveImage = (c) => {
-    if (!c) return `/cropimages/default.jpeg`;
+    if (!c) return getCropImageByName('default');
     if (c.images && c.images.length) return c.images[0].startsWith('http') ? c.images[0] : getBackendImageUrl(c.images[0]);
-    const map = { paddy: 'rice.jpeg', 'sugarcane': 'sugar cane.jpeg', mirchi: 'mirchi.jpeg' };
-    const fname = map[(c.name || '').toLowerCase()] || `${(c.image || '').trim() || (c.name || '').toLowerCase() + '.jpeg'}`;
-    return `/cropimages/${encodeURIComponent(fname)}`;
+    return getCropImageFromSrc(c.image || c.name);
   };
 
   const sampleChart = (c) => {
