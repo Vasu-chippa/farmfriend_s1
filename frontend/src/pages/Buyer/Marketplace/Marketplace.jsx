@@ -45,7 +45,7 @@ const Marketplace = () => {
               <Card className="mp-card">
                 <div className="mp-card-image" onClick={() => navigate(`/buyer/marketplace/${p._id}`)}>
                   {p.images && p.images.length ? (
-                    <img src={p.images[0].startsWith('http') ? p.images[0] : `${process.env.REACT_APP_API_URL?.replace(/\/api\/?$/i, "") || process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}${p.images[0]}`} alt={p.name} onError={(e)=>{e.target.onerror=null; e.target.src=`${process.env.PUBLIC_URL}/cropimages/default.jpeg`}} />
+                    <img src={p.images[0].startsWith('http') ? p.images[0] : `${process.env.REACT_APP_API_URL?.replace(/\/api\/?$/i, "") || process.env.REACT_APP_API_BASE_URL || 'https://farmfriend-s1-vjn8.onrender.com'}${p.images[0]}`} alt={p.name} onError={(e)=>{e.target.onerror=null; e.target.src=`${process.env.PUBLIC_URL}/cropimages/default.jpeg`}} />
                   ) : (
                     <img src={`${process.env.PUBLIC_URL}/cropimages/default.jpeg`} alt={p.name} />
                   )}

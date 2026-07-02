@@ -90,7 +90,7 @@ const CropCardModern = ({ crop }) => {
 
   const imageSrc = crop.images && crop.images.length > 0
     ? (crop.images[0].startsWith('http') ? crop.images[0] : (() => {
-      const base = process.env.REACT_APP_API_BASE_URL || (process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/i, '') : null) || 'http://localhost:5000';
+      const base = process.env.REACT_APP_API_BASE_URL || (process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/i, '') : null) || 'https://farmfriend-s1-vjn8.onrender.com';
       return crop.images[0].startsWith('/') ? `${base}${crop.images[0]}` : `${base}/${crop.images[0]}`;
     })())
     : (crop.image ? `${process.env.PUBLIC_URL}/cropimages/${encodeURIComponent(crop.image)}` : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`);

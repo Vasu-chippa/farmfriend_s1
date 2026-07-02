@@ -56,7 +56,7 @@ const MyOrders = () => {
                     {/* <img
   src={
     order.product?.images?.length > 0
-      ? `http://localhost:5000${order.product.images[0]}`
+      ? `https://farmfriend-s1-vjn8.onrender.com${order.product.images[0]}`
       : "https://via.placeholder.com/80x60?text=No+Image"
   }
   alt={order.product?.name}

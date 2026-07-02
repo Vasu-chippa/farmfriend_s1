@@ -158,7 +158,7 @@ function FarmerMarketplace() {
               onClick={() => navigate(`/farmer/marketplace/${p._id}`)}
             >
               {/* <img
-                src={p.images?.[0] ? `http://localhost:5000${p.images[0]}` : "/default-crop.jpg"}
+                src={p.images?.[0] ? `https://farmfriend-s1-vjn8.onrender.com${p.images[0]}` : "/default-crop.jpg"}
                 alt={p.name}
                 className="product-img"
               /> */}
