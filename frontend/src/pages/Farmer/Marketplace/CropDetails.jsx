@@ -68,7 +68,7 @@ function ImageCarousel({ images, name }) {
                 onClick={() => setIndex(i)}
                 aria-label={`Show image ${i + 1}`}
               >
-                <img src={resolveImageSrc(img)} alt={`thumb-${i}`} onError={(e)=>e.target && (e.target.src=`${process.env.PUBLIC_URL}/cropimages/default.jpeg`)} />
+                <img src={resolveImageSrc(img)} alt={`thumb-${i}`} onError={(e)=>e.target && (e.target.src=`/cropimages/default.jpeg`)} />
               </button>
             ))}
           </div>

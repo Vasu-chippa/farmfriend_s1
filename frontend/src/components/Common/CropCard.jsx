@@ -5,8 +5,8 @@ import './CropCard.css';
 
 const CropCard = ({ crop, onClick, onAdd, disabledAdd, highlight }) => {
   const imgSrc = crop.image
-    ? (crop.image.startsWith('http') ? crop.image : `${process.env.PUBLIC_URL}/cropimages/${encodeURIComponent(crop.image)}`)
-    : `${process.env.PUBLIC_URL}/cropimages/${encodeURIComponent((crop.name||'default').toLowerCase() + '.jpeg')}`;
+    ? (crop.image.startsWith('http') ? crop.image : `/cropimages/${encodeURIComponent(crop.image)}`)
+    : `/cropimages/${encodeURIComponent((crop.name||'default').toLowerCase() + '.jpeg')}`;
 
   const status = crop.status || (crop.quantity > 0 ? 'Ready' : 'Growing');
 
@@ -21,7 +21,7 @@ const CropCard = ({ crop, onClick, onAdd, disabledAdd, highlight }) => {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick && onClick(); } }}
     >
       <div className="cf-img-wrap">
-        <img src={imgSrc} alt={crop.name} onError={(e)=> e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`} />
+        <img src={imgSrc} alt={crop.name} onError={(e)=> e.target.src = `/cropimages/default.jpeg`} />
       </div>
       <div className="cf-body">
         <h4 className="cf-name">{crop.name}</h4>

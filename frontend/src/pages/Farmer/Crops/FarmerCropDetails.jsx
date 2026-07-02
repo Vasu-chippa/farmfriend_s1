@@ -67,11 +67,11 @@ const FarmerCropDetails = () => {
   }, [id, location.state]);
 
   const resolveImage = (c) => {
-    if (!c) return `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+    if (!c) return `/cropimages/default.jpeg`;
     if (c.images && c.images.length) return c.images[0].startsWith('http') ? c.images[0] : getBackendImageUrl(c.images[0]);
     const map = { paddy: 'rice.jpeg', 'sugarcane': 'sugar cane.jpeg', mirchi: 'mirchi.jpeg' };
     const fname = map[(c.name || '').toLowerCase()] || `${(c.image || '').trim() || (c.name || '').toLowerCase() + '.jpeg'}`;
-    return `${process.env.PUBLIC_URL}/cropimages/${encodeURIComponent(fname)}`;
+    return `/cropimages/${encodeURIComponent(fname)}`;
   };
 
   const sampleChart = (c) => {

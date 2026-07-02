@@ -128,9 +128,9 @@ const Home = () => {
                 <div className="logo-center-circle">
                     {/* FIX: Logo using PUBLIC_URL in JSX */}
                     <img 
-                        src={process.env.PUBLIC_URL + '/logo.png'} 
-                        alt="FarmFriend Logo" 
-                        className="logo-img-center" 
+                      src={'/logo.png'} 
+                      alt="FarmFriend Logo" 
+                      className="logo-img-center" 
                     />
                 </div>
                 

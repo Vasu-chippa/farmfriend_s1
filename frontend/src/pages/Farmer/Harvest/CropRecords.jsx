@@ -123,7 +123,7 @@ const CropRecords = () => {
 
   const cropImgSrc = crop?.image
     ? getBackendImageUrl(crop.image)
-    : `${process.env.PUBLIC_URL}/cropimages/default.jpeg`;
+    : `/cropimages/default.jpeg`;
 
   return (
     <div className="cr-root">
@@ -145,7 +145,7 @@ const CropRecords = () => {
           <div className="cr-crop-card">
             <div className="cr-crop-img-wrap">
               <img src={cropImgSrc} alt="crop" className="cr-crop-img"
-                onError={e => { e.target.onerror = null; e.target.src = `${process.env.PUBLIC_URL}/cropimages/default.jpeg`; }} />
+                onError={e => { e.target.onerror = null; e.target.src = `/cropimages/default.jpeg`; }} />
             </div>
             <div className="cr-crop-info">
               <h2>🌾 {crop?.name || 'Loading...'}</h2>
