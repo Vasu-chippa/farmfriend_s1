@@ -7,6 +7,13 @@ export const fetchCurrentUser = async () => {
   try {
     const res = await API.get("/auth/me");
     cachedUser = res.data.user || null;
+    if (cachedUser) {
+      try {
+        localStorage.setItem("user", JSON.stringify(cachedUser));
+      } catch (err) {
+        // Storage can be unavailable in restricted browser contexts.
+      }
+    }
     return cachedUser;
   } catch (err) {
     cachedUser = null;
@@ -31,13 +38,23 @@ export const setAuth = async (tokenOrUser, maybeUser) => {
   // signature: setAuth(token, user) or setAuth(user)
   const user = maybeUser || tokenOrUser;
   cachedUser = user || null;
+  try {
+    if (cachedUser) localStorage.setItem("user", JSON.stringify(cachedUser));
+  } catch (err) {
+    // Storage can be unavailable in restricted browser contexts.
+  }
   // Do not store token client-side; server sets httpOnly cookie on login
   return cachedUser;
 };
 
 export const clearAuth = () => {
-  // clear cache and fire logout request in background
   cachedUser = null;
+  try {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  } catch (err) {
+    // Storage can be unavailable in restricted browser contexts.
+  }
   logout();
 };
 

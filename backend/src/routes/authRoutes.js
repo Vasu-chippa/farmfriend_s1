@@ -13,9 +13,10 @@ router.post(
 	"/register",
 	authRateLimiter,
 	[
-		body('fullName').isLength({ min: 3 }).withMessage('Full name required'),
-		body('email').isEmail().withMessage('Valid email required'),
+		body('fullName').trim().isLength({ min: 3 }).withMessage('Full name required'),
+		body('email').trim().isEmail().normalizeEmail().withMessage('Valid email required'),
 		body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+		body('role').optional().isIn(['farmer', 'buyer']).withMessage('Public registration is available for farmers and buyers only'),
 	],
 	handleValidation,
 	registerUser
@@ -24,7 +25,11 @@ router.post(
 router.post(
 	"/login",
 	authRateLimiter,
-	[body('email').isEmail(), body('password').isLength({ min: 1 })],
+	[
+		body('email').trim().isEmail().normalizeEmail(),
+		body('password').isLength({ min: 1 }),
+		body('role').optional().isIn(['farmer', 'buyer', 'agent', 'admin']),
+	],
 	handleValidation,
 	loginUser
 );

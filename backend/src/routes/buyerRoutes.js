@@ -10,13 +10,32 @@ import {
 import { protect, authorizeRoles } from "../middlewares/authMiddleware.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import { body } from "express-validator";
+import { handleValidation } from "../middlewares/validationMiddleware.js";
+import { authRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
 
 // Buyer registration + login
-router.post("/register", registerBuyer);
-router.post("/login", loginBuyer);
+router.post(
+  "/register",
+  authRateLimiter,
+  [
+    body("fullName").trim().isLength({ min: 3 }).withMessage("Full name required"),
+    body("email").trim().isEmail().normalizeEmail().withMessage("Valid email required"),
+    body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  ],
+  handleValidation,
+  registerBuyer
+);
+router.post(
+  "/login",
+  authRateLimiter,
+  [body("email").trim().isEmail().normalizeEmail(), body("password").isLength({ min: 1 })],
+  handleValidation,
+  loginBuyer
+);
 
 // Buyer profile
 router.get("/profile", protect, authorizeRoles("buyer"), getBuyerProfile);
@@ -80,7 +99,7 @@ import Crop from "../models/Crop.js";
 /// ✅ Marketplace products for buyers
 router.get("/products", async (req, res) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find({ approved: true, quantity: { $gt: 0 } })
       .populate("farmer", "fullName email")
       .sort({ createdAt: -1 });
 
@@ -159,14 +178,23 @@ router.delete("/orders/:id", protect, authorizeRoles("buyer"), async (req, res) 
 router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
   try {
     const { productId, quantity, paymentMethod } = req.body; // ✅ added paymentMethod
+    const requestedQuantity = Number(quantity);
+    if (!Number.isFinite(requestedQuantity) || requestedQuantity <= 0) {
+      return res.status(400).json({ error: "Quantity must be greater than zero" });
+    }
+
     // populate farmer so we can inherit region information
-    const product = await Product.findById(productId).populate('farmer');
-    if (!product || product.quantity < quantity) {
+    const product = await Product.findOne({
+      _id: productId,
+      approved: true,
+      quantity: { $gte: requestedQuantity },
+    }).populate('farmer');
+    if (!product) {
       return res.status(400).json({ error: "Insufficient stock or product not found" });
     }
 
     const price = product.price;
-    const total = price * quantity;
+    const total = price * requestedQuantity;
 
     // Generate transaction ID
     const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -175,7 +203,7 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
     const orderPayload = {
       buyer: req.user._id,
       product: product._id,
-      quantity,
+      quantity: requestedQuantity,
       price,
       total,
       status: "Ordered",
@@ -205,7 +233,7 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
 
     await order.save();
 
-    product.quantity -= quantity;
+    product.quantity -= requestedQuantity;
     await product.save();
 
     res.status(201).json(order);

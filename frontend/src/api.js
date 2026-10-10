@@ -1,5 +1,10 @@
 import axios from "axios";
-const envApiUrl = process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "https://farmfriend-s1-vjn8.onrender.com/api";
+const configuredApiUrl = process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL;
+const envApiUrl = configuredApiUrl || (
+  process.env.NODE_ENV === "development"
+    ? "/api"
+    : "https://farmfriend-s1-vjn8.onrender.com/api"
+);
 const API = axios.create({
   // In local development use the CRA proxy, otherwise use the configured API base URL.
   baseURL: envApiUrl,

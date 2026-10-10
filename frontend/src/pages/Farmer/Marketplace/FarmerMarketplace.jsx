@@ -89,7 +89,7 @@ function FarmerMarketplace() {
         await API.post("/farmers/products", data, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert("✅ Product added!");
+        alert("✅ Product submitted! An agent or admin must approve it before buyers can see it.");
       }
 
       setFormData({
@@ -167,6 +167,7 @@ function FarmerMarketplace() {
                 {/* <p>{p.description}</p> */}
                 <p><strong>Price:</strong> ₹{p.price}</p>
                 <p><strong>Qty:</strong> {p.quantity} kg</p>
+                <p><strong>Marketplace:</strong> {p.approved ? "Approved for buyers" : "Pending agent or admin approval"}</p>
                 {/* <p><strong>Quality:</strong> {p.quality}</p> */}
                 {/* <p>{p.organic ? "🌱 Organic" : "❌ Non-Organic"}</p> */}
 

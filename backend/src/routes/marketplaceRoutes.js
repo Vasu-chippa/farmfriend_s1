@@ -11,9 +11,8 @@ const router = express.Router();
  */
 router.get("/", async (req, res) => {
   try {
-    // Only show products that are not sold out and have available quantity
-    const products = await Product.find({ isSoldOut: false, availableQuantity: { $gt: 0 } })
-      .populate("farmer", "name email")
+    const products = await Product.find({ approved: true, quantity: { $gt: 0 } })
+      .populate("farmer", "fullName email")
       .sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
@@ -28,7 +27,11 @@ router.get("/", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("farmer", "name email");
+    const product = await Product.findOne({
+      _id: req.params.id,
+      approved: true,
+      quantity: { $gt: 0 },
+    }).populate("farmer", "fullName email");
     if (!product) return res.status(404).json({ error: "❌ Product not found" });
     res.json(product);
   } catch (error) {

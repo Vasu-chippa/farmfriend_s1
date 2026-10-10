@@ -5,6 +5,7 @@ import { FiMenu, FiChevronLeft, FiHome, FiShoppingCart, FiUser, FiBarChart2, FiM
 import { useNavigate } from 'react-router-dom';
 import { GiWheat } from 'react-icons/gi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clearAuth } from '../../utils/auth';
 
 const defaultItems = [
   { to: '/', icon: <FiHome />, label: 'Home' },
@@ -70,10 +71,7 @@ const Sidebar = ({ items: itemsProp }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // clear auth state and go home
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // optional: clear other ff-specific keys
+    clearAuth();
     try { document.documentElement.style.removeProperty('--sidebar-width'); } catch (e) {}
     navigate('/');
     // reload to reset any protected-route state (optional)

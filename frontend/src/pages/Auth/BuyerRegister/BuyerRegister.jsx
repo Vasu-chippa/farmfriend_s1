@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
 import { toast } from "react-toastify";
-import API from "../../../api";
+import { register } from "../../../services/authService";
 import wave from "../wave.png";
 import bg from "../bg.svg";
 import avatar from "../avatar.svg";
@@ -17,7 +17,7 @@ function BuyerRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.post("/buyers/register", { fullName, email, password });
+      await register({ fullName, email, password, role: "buyer" });
       toast.success("Buyer registered successfully");
       setTimeout(() => navigate("/buyer/login"), 1000);
     } catch (err) {

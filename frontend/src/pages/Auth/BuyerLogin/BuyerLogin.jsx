@@ -3,6 +3,7 @@ import API from "../../../api";
 import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { setAuth } from "../../../utils/auth";
 import wave from "../wave.png";
 import bg from "../bg.svg";
 import avatar from "../avatar.svg";
@@ -21,6 +22,7 @@ function BuyerLogin() {
       const { token, user } = res.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      setAuth(user);
       
       toast.success("Login successful");
       setTimeout(() => navigate("/buyer/dashboard"), 1000);

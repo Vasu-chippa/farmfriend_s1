@@ -1,5 +1,6 @@
 // apps/backend/server.js
 import path from "path";
+import dns from "dns";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
@@ -198,43 +199,40 @@ process.on('warning', (warning) => {
 const connectDB = async () => {
   const mongoUri = process.env.MONGO_URI;
   if (!mongoUri) {
-    console.warn(
-      "⚠️  MONGO_URI is not set. Skipping MongoDB connection. Set MONGO_URI in your .env to enable DB features."
-    );
-    return;
+    throw new Error("MONGO_URI is not set; database-backed API startup is blocked.");
   }
 
+  const mongoOptions = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: Number(process.env.MONGO_SERVER_TIMEOUT_MS) || 5000,
+  };
+
   try {
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      // Fail fast if server selection takes too long
-      serverSelectionTimeoutMS: Number(process.env.MONGO_SERVER_TIMEOUT_MS) || 5000,
-    });
+    await mongoose.connect(mongoUri, mongoOptions);
     console.log("✅ MongoDB connected successfully");
   } catch (error) {
+    if (error.code === "ECONNREFUSED" && error.message.startsWith("querySrv")) {
+      const dnsServers = (process.env.MONGO_DNS_SERVERS || "1.1.1.1,8.8.8.8")
+        .split(",")
+        .map((server) => server.trim())
+        .filter(Boolean);
+
+      console.warn(`MongoDB SRV lookup was refused; retrying with DNS servers: ${dnsServers.join(", ")}`);
+      dns.setServers(dnsServers);
+      await mongoose.connect(mongoUri, mongoOptions);
+      console.log("✅ MongoDB connected successfully using fallback DNS");
+      return;
+    }
+
     console.error("❌ MongoDB connection failed:", (error && error.message) || error);
     // Helpful diagnostics for common mistakes
     if (mongoUri.indexOf('mongodb://') === -1 && mongoUri.indexOf('mongodb+srv://') === -1) {
       console.error('Provided MONGO_URI does not look like a valid MongoDB connection string.');
     }
-    // Attempt local fallback when available (useful for offline dev)
-    const local = process.env.LOCAL_MONGO_URI;
-    if (local && local !== mongoUri) {
-      console.warn('Attempting fallback to LOCAL_MONGO_URI...');
-      try {
-        await mongoose.connect(local, { useNewUrlParser: true, useUnifiedTopology: true, serverSelectionTimeoutMS: 3000 });
-        console.log('✅ Connected to LOCAL_MONGO_URI fallback');
-        return;
-      } catch (e2) {
-        console.error('Fallback LOCAL_MONGO_URI connection failed:', (e2 && e2.message) || e2);
-      }
-    }
-    // Do not crash the server; routes that require DB should handle missing connection.
+    throw error;
   }
 };
-
-connectDB();
 
 // Server listening
 const PORT = Number(process.env.PORT) || 5000;
@@ -273,9 +271,7 @@ io.on("connection", (socket) => {
 app.locals.io = io;
 app.locals.onlineUsers = onlineUsers;
 
-const server = httpServer.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-server.on("error", (err) => {
+httpServer.on("error", (err) => {
   if (err && err.code === "EADDRINUSE") {
     console.error(`❌ Port ${PORT} is already in use.`);
     console.error(`   Suggested actions:`);
@@ -285,3 +281,16 @@ server.on("error", (err) => {
     console.error("❌ Server error:", err);
   }
 });
+
+const startServer = async () => {
+  try {
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not set.");
+    await connectDB();
+    httpServer.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  } catch (error) {
+    console.error("❌ Application startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

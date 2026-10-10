@@ -13,14 +13,17 @@ function FarmerRegister() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [landSize, setLandSize] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const { user } = await register({
-        fullName,
-        email,
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
         password,
         landSize,
         role: "farmer",
@@ -28,8 +31,16 @@ function FarmerRegister() {
       toast.success(`✅ Farmer registered successfully: ${user.fullName}`);
       setTimeout(() => navigate("/farmer/login"), 1000);
     } catch (err) {
-      console.error("Registration Error:", err.response?.data || err.message);
-      toast.error("❌ Registration failed: " + (err.response?.data?.message || "Unknown error"));
+      const responseData = err.response?.data;
+      const validationMessage = responseData?.errors
+        ?.map((error) => error.msg)
+        .filter(Boolean)
+        .join(" ");
+      const message = responseData?.message || validationMessage || err.message || "Please try again.";
+      console.error("Registration failed:", message);
+      toast.error(`Registration failed: ${message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -53,6 +64,7 @@ function FarmerRegister() {
                 placeholder=" "
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                minLength={3}
                 required
                 autoComplete="name"
               />
@@ -79,6 +91,7 @@ function FarmerRegister() {
                 placeholder=" "
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
                 required
                 autoComplete="new-password"
               />
@@ -93,11 +106,15 @@ function FarmerRegister() {
                 placeholder="Enter land size"
                 value={landSize}
                 onChange={(e) => setLandSize(e.target.value)}
+                min="0"
+                step="any"
                 required
               />
             </div>
 
-            <button type="submit" className="btn">Register</button>
+            <button type="submit" className="btn" disabled={submitting}>
+              {submitting ? "Registering..." : "Register"}
+            </button>
           </form>
         </div>
       </div>

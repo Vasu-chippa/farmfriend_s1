@@ -37,7 +37,9 @@ const Marketplace = () => {
       </div>
 
       {products.length === 0 ? (
-        <div className="mp-empty">No products available. Farmers haven't uploaded anything yet.</div>
+        <div className="mp-empty">
+          No approved, in-stock products are available yet. Products appear here after an agent or admin approves them.
+        </div>
       ) : (
         <div className="market-grid">
           {products.map((p) => (

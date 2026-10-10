@@ -21,7 +21,7 @@ import { protect, authorizeRoles } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // Auth
-router.post("/register", registerAgent);
+router.post("/register", protect, authorizeRoles("admin"), registerAgent);
 router.post("/login", loginAgent);
 
 // Dashboard

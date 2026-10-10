@@ -1,6 +1,6 @@
 /* apps/frontend/src/App.js */
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { useLocation } from "react-router-dom";
 import { AnimatePresence } from 'framer-motion';
@@ -25,7 +25,6 @@ import FarmerRegister from "./pages/Auth/FarmerRegister/FarmerRegister";
 import BuyerLogin from "./pages/Auth/BuyerLogin/BuyerLogin";
 import BuyerRegister from "./pages/Auth/BuyerRegister/BuyerRegister";
 import AgentLogin from "./pages/Auth/AgentLogin/AgentLogin";
-import AgentRegister from "./pages/Auth/AgentRegister/AgentRegister";
 import AdminLogin from "./pages/Auth/AdminLogin/AdminLogin";
 
 // Farmer Section
@@ -86,7 +85,7 @@ function App() {
           <Route path="/buyer/login" element={<BuyerLogin />} />
           <Route path="/buyer/register" element={<BuyerRegister />} />
           <Route path="/agent/login" element={<AgentLogin />} />
-          <Route path="/agent/register" element={<AgentRegister />} />
+          <Route path="/agent/register" element={<Navigate to="/agent/login" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* Farmer Protected Routes */}

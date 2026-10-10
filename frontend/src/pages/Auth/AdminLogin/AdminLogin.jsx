@@ -18,9 +18,9 @@ function AdminLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await API.post("/auth/login", { email, password });
+      const { data } = await API.post("/auth/login", { email, password, role: "admin" });
 
-      if (data.user.role !== "admin") {
+      if (data.user?.role !== "admin") {
         toast.error("Access denied ❌ (Admins only)");
         return;
       }

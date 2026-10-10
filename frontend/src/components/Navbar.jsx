@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
-import { isAuthenticated, getRole, getUser, clearAuth } from "../utils/auth";
+import { isAuthenticated, getRole, getUser, clearAuth, fetchCurrentUser } from "../utils/auth";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -22,9 +22,16 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    // refresh auth state on mount
-    setAuthed(isAuthenticated());
-    setRole(getRole());
+    let mounted = true;
+    fetchCurrentUser().then((user) => {
+      if (mounted) {
+        setAuthed(Boolean(user));
+        setRole(user?.role || null);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleLogout = () => {

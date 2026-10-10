@@ -13,7 +13,7 @@ function FarmerLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/auth/login", { email, password });
+      const res = await API.post("/auth/login", { email, password, role: "farmer" });
       // Prefer server-provided user, but verify session by fetching /auth/me
       let user = res.data?.user;
       try {

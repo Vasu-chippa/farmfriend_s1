@@ -30,7 +30,10 @@ export const registerAgent = async (req, res) => {
     });
 
     await agent.save();
-    res.status(201).json({ message: "Agent registered successfully", agent });
+    res.status(201).json({
+      message: "Agent registered successfully",
+      agent: { _id: agent._id, fullName: agent.fullName, email: agent.email, role: agent.role },
+    });
   } catch (error) {
     res
       .status(500)
@@ -63,6 +66,13 @@ export const loginAgent = async (req, res) => {
       role: "agent",
     };
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     res.json({ message: "Login successful", token, user: userSafe });
   } catch (err) {
     console.error("loginAgent:", err);
