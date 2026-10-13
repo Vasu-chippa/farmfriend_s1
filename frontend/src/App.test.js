@@ -20,6 +20,14 @@ jest.mock('axios', () => {
   };
 });
 
+beforeAll(() => {
+  global.IntersectionObserver = class IntersectionObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
+
 test('renders the home route', () => {
   render(
     <MemoryRouter initialEntries={['/']}>
