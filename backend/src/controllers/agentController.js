@@ -165,7 +165,7 @@ export const verifyFarmer = async (req, res) => {
 // =================== PRODUCTS ===================
 export const listProductsForAgent = async (req, res) => {
   try {
-    const products = await Product.find().populate("farmer", "fullName email");
+    const products = await Product.find().populate("farmer", "fullName email verified");
     res.json(products);
   } catch (error) {
     res
@@ -180,15 +180,19 @@ export const approveProduct = async (req, res) => {
     const { productId } = req.params;
     const { approve } = req.body;
 
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).populate("farmer", "verified");
     if (!product) return res.status(404).json({ message: "Product not found" });
+    if (approve && !product.farmer?.verified) {
+      return res.status(409).json({ message: "Verify the farmer before approving this product" });
+    }
 
+    const wasApproved = product.approved;
     product.approved = !!approve;
     await product.save();
 
-    // === Add 2% commission to the agent if approved ===
-    if (approve) {
+    if (approve && !wasApproved) {
       const agent = await User.findById(req.user._id);
+      if (!agent) return res.status(404).json({ message: "Agent not found" });
       const commission = (product.price * product.quantity * 2) / 100;
       agent.commissionEarned += commission;
       await agent.save();

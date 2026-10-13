@@ -41,6 +41,17 @@ const ManageProducts = () => {
     }
   };
 
+  const handleApproval = async (product) => {
+    try {
+      await API.put(`/admins/products/${product._id}/approve`, {
+        approved: !product.approved,
+      });
+      await fetchProducts();
+    } catch (err) {
+      alert("Failed to update product approval");
+    }
+  };
+
   return (
     <div className="manage-products">
       <div className="content">
@@ -59,7 +70,7 @@ const ManageProducts = () => {
         <table className="products-table">
           <thead>
             <tr>
-              <th>#</th><th>Name</th><th>Category</th><th>Price</th><th>Action</th>
+              <th>#</th><th>Name</th><th>Category</th><th>Price</th><th>Marketplace</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -69,7 +80,15 @@ const ManageProducts = () => {
                 <td>{p.name}</td>
                 <td>{p.category}</td>
                 <td>₹{p.price}</td>
-                <td><button onClick={() => handleDelete(p._id)}>❌</button></td>
+                <td>
+                  <button
+                    className={p.approved ? "approval-btn approved" : "approval-btn"}
+                    onClick={() => handleApproval(p)}
+                  >
+                    {p.approved ? "Approved" : "Approve"}
+                  </button>
+                </td>
+                <td><button onClick={() => handleDelete(p._id)}>Delete</button></td>
               </tr>
             ))}
           </tbody>

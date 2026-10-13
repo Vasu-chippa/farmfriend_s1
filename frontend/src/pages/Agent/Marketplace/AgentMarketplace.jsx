@@ -1,5 +1,6 @@
 // apps/frontend/src/pages/Agent/Marketplace/AgentMarketplace.jsx
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../../api";
 //import AgentSidebar from "../../../components/AgentSidebar";
 import "../../../pages/Agent/Agent.css";
@@ -8,6 +9,9 @@ import { motion } from "framer-motion";
 import { slideInRight } from "../../Agent/animation";
 
 export default function AgentMarketplace() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const farmerId = new URLSearchParams(location.search).get("farmerId");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +26,11 @@ export default function AgentMarketplace() {
     } finally { setLoading(false); }
   };
 
-  useEffect(()=> { fetchProducts() }, []);
+  useEffect(()=> { fetchProducts() }, [location.search]);
+
+  const visibleProducts = farmerId
+    ? products.filter((product) => String(product.farmer?._id) === farmerId)
+    : products;
 
   const toggleApprove = async (id, approve) => {
     if (!window.confirm(`${approve ? "Approve" : "Unapprove"} product?`)) return;
@@ -42,15 +50,18 @@ export default function AgentMarketplace() {
       <main className="agent-main">
         <motion.div initial="hidden" animate="visible" variants={slideInRight}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12}}>
-            <h2>Marketplace (My Farmers)</h2>
+            <div>
+              <h2>{farmerId ? "Review Farmer Products" : "Product Approvals"}</h2>
+              <p>Verify the farmer first, then approve each product before buyers can see it.</p>
+            </div>
             <div><button className="btn" onClick={fetchProducts}>Refresh</button></div>
           </div>
 
         <div className="panel">
   {loading ? (
     <p>Loading products...</p>
-  ) : products.length === 0 ? (
-    <p>No products found.</p>
+  ) : visibleProducts.length === 0 ? (
+    <p>{farmerId ? "No products found for this farmer." : "No products found."}</p>
   ) : (
     <div
       style={{
@@ -59,7 +70,7 @@ export default function AgentMarketplace() {
         gap: 12,
       }}
     >
-      {products.map((p) => (
+      {visibleProducts.map((p) => (
         <div
           key={p._id}
           className="panel"
@@ -83,6 +94,9 @@ export default function AgentMarketplace() {
               <h3 style={{ margin: 0 }}>{p.name}</h3>
               <div className="small">
                 Farmer: {p.farmer?.fullName || p.farmer?.name || "—"}
+              </div>
+              <div className="small">
+                Farmer status: {p.farmer?.verified ? "Verified" : "Verification required"}
               </div>
               <div style={{ marginTop: 8 }}>
                 <strong>₹{p.price}</strong> • {p.quantity} kg
@@ -111,12 +125,16 @@ export default function AgentMarketplace() {
                 >
                   Remove
                 </button>
-              ) : (
+              ) : p.farmer?.verified ? (
                 <button
                   className="btn secondary"
                   onClick={() => toggleApprove(p._id, true)}
                 >
                   Approve
+                </button>
+              ) : (
+                <button className="btn secondary" onClick={() => navigate("/agent/farmers")}>
+                  Verify farmer first
                 </button>
               )}
             </div>

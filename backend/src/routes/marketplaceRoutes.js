@@ -2,6 +2,7 @@
 // backend/src/routes/marketplaceRoutes.js
 import express from "express";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -11,7 +12,12 @@ const router = express.Router();
  */
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find({ approved: true, quantity: { $gt: 0 } })
+    const verifiedFarmerIds = await User.distinct("_id", { role: "farmer", verified: true });
+    const products = await Product.find({
+      approved: true,
+      quantity: { $gt: 0 },
+      farmer: { $in: verifiedFarmerIds },
+    })
       .populate("farmer", "fullName email")
       .sort({ createdAt: -1 });
     res.json(products);
@@ -27,10 +33,12 @@ router.get("/", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   try {
+    const verifiedFarmerIds = await User.distinct("_id", { role: "farmer", verified: true });
     const product = await Product.findOne({
       _id: req.params.id,
       approved: true,
       quantity: { $gt: 0 },
+      farmer: { $in: verifiedFarmerIds },
     }).populate("farmer", "fullName email");
     if (!product) return res.status(404).json({ error: "❌ Product not found" });
     res.json(product);

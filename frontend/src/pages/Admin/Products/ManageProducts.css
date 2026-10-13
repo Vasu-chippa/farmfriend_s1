@@ -102,3 +102,15 @@
 .products-table button:hover {
   background: #b91c1c;
 }
+
+.products-table button.approval-btn {
+  background: #15803d;
+}
+
+.products-table button.approval-btn:hover {
+  background: #166534;
+}
+
+.products-table button.approval-btn.approved {
+  background: #475569;
+}

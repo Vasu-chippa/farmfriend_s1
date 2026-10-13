@@ -1,5 +1,6 @@
 // apps/frontend/src/pages/Agent/Farmers/AgentFarmers.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../../api";
 //import AgentSidebar from "../../../components/AgentSidebar";
 import "../../../pages/Agent/Agent.css";
@@ -8,6 +9,7 @@ import { motion } from "framer-motion";
 import { slideInLeft } from "../../Agent/animation";
 
 export default function AgentFarmers() {
+  const navigate = useNavigate();
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -44,7 +46,10 @@ export default function AgentFarmers() {
     if (!window.confirm(`${verify ? "Verify" : "Unverify"} farmer?`)) return;
     try {
       await API.put("/agents/farmers/verify", { farmerId, verify });
-      fetchFarmers();
+      await fetchFarmers();
+      if (verify) {
+        navigate(`/agent/marketplace?farmerId=${farmerId}`);
+      }
     } catch (err) {
       console.error("verify farmer", err);
       alert("Failed to update farmer");
@@ -80,9 +85,9 @@ export default function AgentFarmers() {
           <div className="panel table">
             {loading ? <p>Loading farmers...</p> :
               <table>
-                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Verified</th><th>Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Verified</th><th>Action</th><th>Products</th></tr></thead>
                 <tbody>
-                  {farmers.length === 0 ? <tr><td colSpan={5}>No farmers assigned.</td></tr> :
+                  {farmers.length === 0 ? <tr><td colSpan={6}>No farmers assigned.</td></tr> :
                     farmers.map(f => (
                       <tr key={f._id}>
                         <td>{f.fullName || f.name}</td>
@@ -92,6 +97,11 @@ export default function AgentFarmers() {
                         <td>
                           <button className="btn secondary" onClick={()=>toggleVerify(f._id, !f.verified)}>
                             {f.verified ? "Unverify" : "Verify"}
+                          </button>
+                        </td>
+                        <td>
+                          <button className="btn" onClick={() => navigate(`/agent/marketplace?farmerId=${f._id}`)}>
+                            Review products
                           </button>
                         </td>
                       </tr>

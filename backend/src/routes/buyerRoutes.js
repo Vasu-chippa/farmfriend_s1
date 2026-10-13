@@ -10,6 +10,7 @@ import {
 import { protect, authorizeRoles } from "../middlewares/authMiddleware.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 import { body } from "express-validator";
 import { handleValidation } from "../middlewares/validationMiddleware.js";
 import { authRateLimiter } from "../middlewares/rateLimiter.js";
@@ -99,7 +100,12 @@ import Crop from "../models/Crop.js";
 /// ✅ Marketplace products for buyers
 router.get("/products", async (req, res) => {
   try {
-    const products = await Product.find({ approved: true, quantity: { $gt: 0 } })
+    const verifiedFarmerIds = await User.distinct("_id", { role: "farmer", verified: true });
+    const products = await Product.find({
+      approved: true,
+      quantity: { $gt: 0 },
+      farmer: { $in: verifiedFarmerIds },
+    })
       .populate("farmer", "fullName email")
       .sort({ createdAt: -1 });
 
@@ -184,10 +190,12 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
     }
 
     // populate farmer so we can inherit region information
+    const verifiedFarmerIds = await User.distinct("_id", { role: "farmer", verified: true });
     const product = await Product.findOne({
       _id: productId,
       approved: true,
       quantity: { $gte: requestedQuantity },
+      farmer: { $in: verifiedFarmerIds },
     }).populate('farmer');
     if (!product) {
       return res.status(400).json({ error: "Insufficient stock or product not found" });
