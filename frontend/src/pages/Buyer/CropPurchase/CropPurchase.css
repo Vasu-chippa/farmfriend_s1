@@ -93,6 +93,13 @@ body {
   color: #2e7d32;
 }
 
+.order-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 /* ===== INPUT ===== */
 .order-box input,
 .order-box select {

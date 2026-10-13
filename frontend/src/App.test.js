@@ -35,5 +35,5 @@ test('renders the home route', () => {
     </MemoryRouter>
   );
 
-  expect(screen.getByRole('heading', { name: /FarmFriend/ })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: /FarmFriend/ })).toBeInTheDocument();
 });

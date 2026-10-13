@@ -191,12 +191,16 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
 
     // populate farmer so we can inherit region information
     const verifiedFarmerIds = await User.distinct("_id", { role: "farmer", verified: true });
-    const product = await Product.findOne({
-      _id: productId,
-      approved: true,
-      quantity: { $gte: requestedQuantity },
-      farmer: { $in: verifiedFarmerIds },
-    }).populate('farmer');
+    const product = await Product.findOneAndUpdate(
+      {
+        _id: productId,
+        approved: true,
+        quantity: { $gte: requestedQuantity },
+        farmer: { $in: verifiedFarmerIds },
+      },
+      { $inc: { quantity: -requestedQuantity } },
+      { new: true }
+    ).populate('farmer');
     if (!product) {
       return res.status(400).json({ error: "Insufficient stock or product not found" });
     }
@@ -238,11 +242,12 @@ router.post("/orders", protect, authorizeRoles("buyer"), async (req, res) => {
     }
 
     const order = new Order(orderPayload);
-
-    await order.save();
-
-    product.quantity -= requestedQuantity;
-    await product.save();
+    try {
+      await order.save();
+    } catch (error) {
+      await Product.updateOne({ _id: product._id }, { $inc: { quantity: requestedQuantity } });
+      throw error;
+    }
 
     res.status(201).json(order);
   } catch (err) {

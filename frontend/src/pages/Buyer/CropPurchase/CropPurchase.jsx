@@ -10,7 +10,10 @@ function CropPurchase() {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [processing, setProcessing] = useState(false);
+  const [orderError, setOrderError] = useState("");
   const navigate = useNavigate();
+  const availableQuantity = Number(product?.quantity || 0);
+  const isQuantityValid = Number.isFinite(quantity) && quantity > 0 && quantity <= availableQuantity;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -25,10 +28,13 @@ function CropPurchase() {
   }, [id]);
 
   const placeOrder = async (paymentMethod) => {
-    setProcessing(true);
+    if (!isQuantityValid) {
+      setOrderError(`Enter a quantity greater than 0 and no more than ${availableQuantity} kg.`);
+      return;
+    }
 
-    // small delay for UX
-    await new Promise((r) => setTimeout(r, 800));
+    setOrderError("");
+    setProcessing(true);
 
     try {
       const token = localStorage.getItem("token");
@@ -46,18 +52,7 @@ function CropPurchase() {
       });
 
     } catch (err) {
-      console.warn("⚠️ Backend failed, using demo order");
-
-      const fakeOrder = {
-        _id: `ORDER-${Date.now()}`,
-        product: { name: product.name },
-        quantity,
-        total: product.price * quantity,
-      };
-
-      navigate(`/buyer/orders/confirmation/${fakeOrder._id}`, {
-        state: { order: fakeOrder, demo: true },
-      });
+      setOrderError(err.response?.data?.error || "Could not place the order. Please try again.");
 
     } finally {
       setProcessing(false);
@@ -108,11 +103,18 @@ function CropPurchase() {
             <label>Enter Quantity (kg)</label>
             <input
               type="number"
-              value={quantity}
-              min="1"
-              max={product.quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+              value={Number.isFinite(quantity) ? quantity : ""}
+              min="0.01"
+              max={availableQuantity}
+              step="any"
+              onChange={(e) => setQuantity(e.target.value === "" ? "" : e.target.valueAsNumber)}
             />
+            {quantity !== "" && !isQuantityValid && (
+              <p className="order-error" role="alert">
+                Enter a quantity greater than 0 and no more than {availableQuantity} kg.
+              </p>
+            )}
+            {orderError && <p className="order-error" role="alert">{orderError}</p>}
 
             <label>Payment Method</label>
             <select id="paymentMethod">
@@ -124,7 +126,7 @@ function CropPurchase() {
 
             <button
               className="order-btn"
-              disabled={processing}
+              disabled={processing || !isQuantityValid}
               onClick={() => {
                 const method =
                   document.getElementById("paymentMethod").value;
