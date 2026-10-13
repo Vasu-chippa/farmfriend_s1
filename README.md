@@ -1,4 +1,4 @@
-# farmfriend_v / farmfriend_s1
+# FarmFriend
 
 Deployment
 ==========
