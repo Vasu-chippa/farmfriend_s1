@@ -14,6 +14,7 @@
 	margin-inline: auto;
 	background: #fff;
 	border-radius: 14px;
+	margin-left: 440px;
 	padding: 22px 26px;
 	text-align: left;
 	box-shadow: 0 18px 40px rgba(2,20,16,0.08);
@@ -34,7 +35,7 @@
 .oc-actions{display:flex;gap:12px;justify-content:center;margin-top:2px;width:100%}
 .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
 .btn.primary{background:linear-gradient(180deg,#1f7a1f,#2d9d5a);color:#fff}
-.btn.ghost{background:#0eff5e}
+.btn.ghost{background:#0eff5e; width:500px;color:#000000;font-weight:600; }
 .oc-loading{padding:40px;text-align:center}
 
 @media (max-width: 768px) {

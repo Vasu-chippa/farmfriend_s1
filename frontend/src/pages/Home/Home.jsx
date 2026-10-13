@@ -1,23 +1,81 @@
 // File: apps/frontend/src/pages/Home/Home.jsx
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import "./Home.css";
-import Footer from "../../components/Footer";
 
-// Assuming these utility functions are correctly implemented
-import { isAuthenticated, getRole } from "../../utils/auth"; 
+import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  useSpring,
+} from "framer-motion";
+import "./Home.css";
+
+import Footer from "../../components/Footer";
+import { isAuthenticated, getRole } from "../../utils/auth";
+
+// --- PLATFORM IMPACT METRICS ---
+const PLATFORM_STATS = [
+  { label: "Verified Farmers", value: "12,500+" },
+  { label: "Active Buyers", value: "4,800+" },
+  { label: "Crops Traded", value: "85,000 MT" },
+  { label: "Fair Trade Value", value: "$14.2M" },
+];
+
+// --- ADVANCED GLASS 3D TILT CARD COMPONENT ---
+const TiltCard = ({ children, className }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [12, -12]), {
+    stiffness: 200,
+    damping: 20,
+  });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-12, 12]), {
+    stiffness: 200,
+    damping: 20,
+  });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / rect.width - 0.5);
+    y.set(mouseY / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      className={className}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div style={{ transform: "translateZ(25px)", height: "100%" }}>{children}</div>
+    </motion.div>
+  );
+};
 
 const Home = () => {
   const navigate = useNavigate();
   const authed = isAuthenticated();
   const role = getRole();
+  const containerRef = useRef(null);
 
   const handleGetStarted = () => {
     if (!authed) {
       navigate("/farmer/login");
     } else {
-      // Role-based routing
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "farmer") navigate("/farmer/dashboard");
       else if (role === "buyer") navigate("/buyer/dashboard");
@@ -26,85 +84,73 @@ const Home = () => {
     }
   };
 
-  // --- FRAMER MOTION VARIANTS ---
-
-  const heroVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { 
-        opacity: 1, 
-        y: 0, 
-        transition: { 
-            type: "spring", 
-            stiffness: 70, 
-            duration: 0.8 
-        } 
-    },
-  };
-
-  const featureContainerVariants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
-  };
-
-  const roleCardVariants = {
-    hidden: { opacity: 0, x: -20, rotateY: 90 },
-    visible: { 
-        opacity: 1, 
-        x: 0, 
-        rotateY: 0,
-        transition: { 
-            type: "spring", 
-            stiffness: 100, 
-            damping: 15 
-        } 
-    },
-    hover: { 
-        scale: 1.05, 
-        boxShadow: "0 15px 35px rgba(0, 0, 0, 0.25)",
-    },
-  };
-  
-  const aboutVariants = {
-    hidden: { opacity: 0, scale: 0.95, y: 30 },
-    visible: { 
-        opacity: 1, 
-        scale: 1, 
-        y: 0,
-        transition: { duration: 0.8 } 
-    }
-  };
-
   return (
-    <div className="ff-home-page">
+    <div className="ff-home-page" ref={containerRef}>
       {/* --------------------- 1. HERO SECTION --------------------- */}
-      <motion.header 
-        className="hero"
-        initial="hidden"
-        animate="visible"
-        variants={heroVariants}
-      >
-        <div className="hero-inner container">
-          <div className="hero-content">
-            <h1 className="hero-title">FarmFriend: <span className="highlight">Direct Farm-to-Market</span></h1>
+      <header className="hero">
+        {/* Floating Background Particles */}
+        <div className="hero-particles" aria-hidden="true">
+          {[
+            { icon: "🍃", top: "12%", left: "6%", duration: 7, delay: 0 },
+            { icon: "🌾", top: "65%", left: "88%", duration: 9, delay: 1.5 },
+            { icon: "🌱", top: "80%", left: "10%", duration: 6, delay: 0.8 },
+            { icon: "🌿", top: "22%", left: "82%", duration: 8, delay: 2 },
+          ].map((item, idx) => (
+            <motion.div
+              key={idx}
+              className="particle-item"
+              style={{ top: item.top, left: item.left }}
+              animate={{
+                y: [0, -30, 0],
+                rotate: [0, 20, -15, 0],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: item.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: item.delay,
+              }}
+            >
+              {item.icon}
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="container hero-inner">
+          <motion.div
+            className="hero-content"
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Top Left Badge with Brand Emblem */}
+            <div className="hero-badge">
+              <img src="/logo.png" alt="FarmFriend Logo" className="hero-badge-logo" />
+              <span className="pulse-dot"></span> Next-Gen AgriTech Ecosystem
+            </div>
+
+            <h1 className="hero-title">
+              FarmFriend: <br />
+              <span className="highlight-gradient">Direct Farm-to-Market</span>
+            </h1>
+
             <p className="hero-sub">
-              Digitizing agriculture trade with **transparency, efficiency, and fair pricing**. Manage crops, connect with buyers, and streamline logistics—all in one place.
+              Empower direct agricultural trade, access real-time pricing transparency, eliminate middlemen, and track crop logistics with precision intelligence.
             </p>
 
             <div className="hero-cta">
-              <motion.button 
-                className="btn-primary" 
+              <motion.button
+                className="btn-primary-glow"
                 onClick={handleGetStarted}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {authed ? "Go to Dashboard" : "Get Started Now"}
+                {authed ? "Go to Dashboard" : "Get Started Free"}
               </motion.button>
+
               <motion.button
-                className="btn-ghost"
+                className="btn-glass"
                 onClick={() => navigate("/marketplace")}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -112,184 +158,172 @@ const Home = () => {
                 Browse Marketplace
               </motion.button>
             </div>
-          </div>
+          </motion.div>
 
-          {/* FIX: Simplified Visual - Only the Logo as the centerpiece */}
-          <motion.div 
-            className="hero-visual-container" 
-            aria-hidden
-            initial={{ opacity: 0, x: 50, rotate: 0 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+          {/* Cinematic 3D Glowing Centerpiece */}
+          <motion.div
+            className="hero-visual-container"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
           >
             <div className="hero-visual-device">
-                
-                {/* 1. Large Circular Logo Element (The sole centerpiece) */}
-                <div className="logo-center-circle">
-                    {/* FIX: Logo using PUBLIC_URL in JSX */}
-                    <img 
-                      src={'/logo.png'} 
-                      alt="FarmFriend Logo" 
-                      className="logo-img-center" 
-                    />
-                </div>
-                
-                {/* REMOVED: Floating Animated App Mockup */}
+              <motion.div
+                className="ambient-glow"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.35, 0.65, 0.35] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              />
+
+              {/* Orbiting Ring */}
+              <motion.svg
+                className="orbit-svg"
+                viewBox="0 0 320 320"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
+              >
+                <circle
+                  cx="160"
+                  cy="160"
+                  r="145"
+                  stroke="rgba(82, 183, 136, 0.35)"
+                  strokeWidth="2.5"
+                  strokeDasharray="12 14"
+                  fill="none"
+                />
+              </motion.svg>
+
+              <TiltCard className="logo-center-card">
+                <img src="/logo.png" alt="FarmFriend Logo" className="logo-img-center" />
+              </TiltCard>
             </div>
           </motion.div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* --------------------- 2. ROLE BENEFITS SECTION (No changes) --------------------- */}
-      <motion.section 
-        className="role-benefits"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={featureContainerVariants}
-      >
-        <div className="container">
-            <h2>Empowering Every Role in the Supply Chain</h2>
-            <div className="role-grid">
-                
-                <motion.article className="role-card farmer-card" variants={roleCardVariants} whileHover="hover">
-                    <div className="role-icon">👨‍🌾</div>
-                    <h3>For the Farmer</h3>
-                    <ul>
-                        <li><span className="dot"></span> **Control:** List crops with full detail and set your own price.</li>
-                        <li><span className="dot"></span> **Efficiency:** Digital crop & harvest management (CRUD).</li>
-                        <li><span className="dot"></span> **Demand:** View real-time buyer interest and market demand.</li>
-                    </ul>
-                </motion.article>
-
-                <motion.article className="role-card buyer-card" variants={roleCardVariants} whileHover="hover">
-                    <div className="role-icon">🛍️</div>
-                    <h3>For the Buyer</h3>
-                    <ul>
-                        <li><span className="dot"></span> **Quality:** Direct access to fresh, local, and organic produce.</li>
-                        <li><span className="dot"></span> **Trust:** Rate farmers and track your orders end-to-end.</li>
-                        <li><span className="dot"></span> **Choice:** Advanced filtering (price, quality, farmer) in the marketplace.</li>
-                    </ul>
-                </motion.article>
-                
-                <motion.article className="role-card agent-card" variants={roleCardVariants} whileHover="hover">
-                    <div className="role-icon">🚚</div>
-                    <h3>For the Agent</h3>
-                    <ul>
-                        <li><span className="dot"></span> **Streamlining:** Simplified order assignment and status updates.</li>
-                        <li><span className="dot"></span> **Logistics:** Tools for easy pickup, delivery, and transport management.</li>
-                        <li><span className="dot"></span> **Support:** Central hub for dispute resolution and farmer onboarding.</li>
-                    </ul>
-                </motion.article>
-            </div>
-        </div>
-      </motion.section>
-
-      {/* --------------------- 3. ABOUT/CORE VALUES SECTION (No changes) --------------------- */}
-      <motion.section 
-        className="about-project"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
-        variants={aboutVariants}
-      >
-        <div className="container">
-          <h2>Our Promise: Transparency and Efficiency</h2>
-          <div className="about-content">
-            <p>
-              FarmFriend is built to solve the complex inefficiencies of traditional agricultural trade. Our platform brings **every step into the light**, from the farmer's listing details to the agent's delivery status. This commitment ensures fair prices for farmers and assured quality for buyers.
-            </p>
-            <div className="core-values">
-                <div className="value-item">
-                    <div className="value-icon">👁️‍🗨️</div>
-                    <h3>Full Transparency</h3>
-                    <p>Buyer reviews, crop verification tools, and clear pricing structure eliminates hidden fees and distrust.</p>
-                </div>
-                <div className="value-item">
-                    <div className="value-icon">⚡</div>
-                    <h3>Maximum Efficiency</h3>
-                    <p>Role-based dashboards, JWT security, and MERN stack speed streamline management and transactions.</p>
-                </div>
-                <div className="value-item">
-                    <div className="value-icon">📈</div>
-                    <h3>Sustainable Growth</h3>
-                    <p>Focus on data-driven decisions and direct market access for long-term prosperity.</p>
-                </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-
-      {/* --------------------- 4. FEATURES SECTION (No changes) --------------------- */}
-      <section className="features">
-        <div className="container">
-          <h2>Core Modules to Power Your Operations</h2>
-          <motion.div 
-             className="feature-grid"
-             initial="hidden"
-             whileInView="visible"
-             viewport={{ once: true, amount: 0.3 }}
-             variants={featureContainerVariants}
-          >
-            <motion.article className="feature-card animated-module-card" variants={aboutVariants} whileHover={{ scale: 1.05 }}>
-              <div className="feature-icon">🌾</div>
-              <h3>Crop Management</h3>
-              <p>Select crops for your land, track growth cycles, and get recommendations by season & soil type.</p>
-            </motion.article>
-
-            <motion.article className="feature-card animated-module-card" variants={aboutVariants} whileHover={{ scale: 1.05 }}>
-              <div className="feature-icon">📊</div>
-              <h3>Profit Analysis</h3>
-              <p>Track all costs and sales to view profit/loss per crop, compare seasons, and improve decisions.</p>
-            </motion.article>
-
-            <motion.article className="feature-card animated-module-card" variants={aboutVariants} whileHover={{ scale: 1.05 }}>
-              <div className="feature-icon">🛒</div>
-              <h3>Digital Marketplace</h3>
-              <p>List produce with images & pricing, reach local buyers, and accept orders securely.</p>
-            </motion.article>
-
-            <motion.article className="feature-card animated-module-card" variants={aboutVariants} whileHover={{ scale: 1.05 }}>
-              <div className="feature-icon">💬</div>
-              <h3>Secure Chat</h3>
-              <p>Direct communication between Farmers and Buyers/Agents for smooth inquiries and logistics.</p>
-            </motion.article>
-          </motion.div>
+      {/* --------------------- 2. IMPACT STATS --------------------- */}
+      <section className="stats-section">
+        <div className="container stats-grid">
+          {PLATFORM_STATS.map((stat, idx) => (
+            <motion.div
+              key={idx}
+              className="stat-card"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1, duration: 0.5 }}
+            >
+              <h3>{stat.value}</h3>
+              <p>{stat.label}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
+      {/* --------------------- 3. STAKEHOLDER BENEFITS --------------------- */}
+      <section className="role-benefits">
+        <div className="container">
+          <div className="section-header">
+            <h2>Built for Every Stakeholder</h2>
+            <p>Empowering seamless collaboration and trust across the agricultural supply chain.</p>
+          </div>
 
-      {/* --------------------- 5. QUICK START/CTA SECTION (No changes) --------------------- */}
+          <div className="role-grid">
+            <TiltCard className="role-card">
+              <div className="role-icon">👨‍🌾</div>
+              <h3>For Farmers</h3>
+              <ul>
+                <li><strong>Price Freedom:</strong> Set crops and pricing directly without brokers.</li>
+                <li><strong>Digital CRUD:</strong> Track harvests, inventory, and growth cycles.</li>
+                <li><strong>Live Demand:</strong> Analyze buyer trends and market requirements.</li>
+              </ul>
+            </TiltCard>
+
+            <TiltCard className="role-card">
+              <div className="role-icon">🛍️</div>
+              <h3>For Buyers</h3>
+              <ul>
+                <li><strong>Verified Quality:</strong> Direct access to local organic produce.</li>
+                <li><strong>End-to-End Tracking:</strong> Monitor orders from farm to warehouse.</li>
+                <li><strong>Smart Filtering:</strong> Advanced search by region, rating, and price.</li>
+              </ul>
+            </TiltCard>
+
+            <TiltCard className="role-card">
+              <div className="role-icon">🚚</div>
+              <h3>For Logistics Agents</h3>
+              <ul>
+                <li><strong>Smart Dispatch:</strong> Streamlined delivery routes and assignment.</li>
+                <li><strong>Status Sync:</strong> Live pickup notifications and milestone logs.</li>
+                <li><strong>Support Hub:</strong> Rapid dispute resolution and onboarding tools.</li>
+              </ul>
+            </TiltCard>
+          </div>
+        </div>
+      </section>
+
+      {/* --------------------- 4. CORE FEATURES --------------------- */}
+      <section className="features">
+        <div className="container">
+          <div className="section-header">
+            <h2>Complete Ecosystem Modules</h2>
+            <p>Advanced digital architecture built to run modern agricultural operations smoothly.</p>
+          </div>
+
+          <div className="feature-grid">
+            {[
+              { icon: "🌾", title: "Crop Management", desc: "Select optimal crops per soil type, track lifecycles, and get seasonal insights." },
+              { icon: "📊", title: "Profit Analytics", desc: "Monitor income vs expenses to review profit/loss metrics per harvest." },
+              { icon: "🛒", title: "Digital Marketplace", desc: "Publish media-rich listings, connect with verified buyers, and sell securely." },
+              { icon: "💬", title: "Secure Chat", desc: "Communicate directly between farmers, buyers, and delivery partners." },
+            ].map((feat, idx) => (
+              <motion.div
+                key={idx}
+                className="feature-card"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+                whileHover={{ y: -8 }}
+              >
+                <div className="feature-icon">{feat.icon}</div>
+                <h3>{feat.title}</h3>
+                <p>{feat.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --------------------- 5. CINEMATIC CTA --------------------- */}
       <section className="quick-start">
         <div className="container">
-          <h2>Ready to revolutionize your agricultural trade?</h2>
-          <p>
-            Join FarmFriend today to start managing crops, tracking expenses, and connecting directly to the market.
-          </p>
-          <motion.div 
-            className="hero-cta"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+          <motion.div
+            className="cta-glass-card"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
           >
-            <motion.button 
-              className="btn-primary" 
-              onClick={handleGetStarted}
-              whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(27,67,50,0.25)" }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {authed ? "Go to Dashboard" : "Create Your Free Account"}
-            </motion.button>
-            <motion.button
-              className="btn-ghost"
-              onClick={() => navigate(authed ? "/farmer/profile" : "/farmer/register")}
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.8)" }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {authed ? "View Profile" : "Register as Farmer"}
-            </motion.button>
+            <h2>Ready to Transform Your Agricultural Trade?</h2>
+            <p>Join the FarmFriend network today to streamline crop management and unlock direct market access.</p>
+            <div className="hero-cta">
+              <motion.button
+                className="btn-primary-glow"
+                onClick={handleGetStarted}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {authed ? "Go to Dashboard" : "Create Free Account"}
+              </motion.button>
+              <motion.button
+                className="btn-glass"
+                onClick={() => navigate(authed ? "/farmer/profile" : "/farmer/register")}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {authed ? "View Profile" : "Register as Farmer"}
+              </motion.button>
+            </div>
           </motion.div>
         </div>
       </section>
